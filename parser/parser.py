@@ -49,7 +49,7 @@ def extract_biography_data(text):
 Return ONLY a JSON object with those fields.""",
         "You are a data extraction assistant.",
         max_tokens=None
-    )
+    ).lstrip("```json").rstrip("```").strip()
 
 
 for file in os.listdir(INPUT_DIR):
