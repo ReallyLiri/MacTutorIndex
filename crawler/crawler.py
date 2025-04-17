@@ -1,17 +1,25 @@
+import concurrent.futures
 import os
+from concurrent.futures import ProcessPoolExecutor
 from urllib.parse import urljoin, urlparse
 
 import html2text
 import requests
 from bs4 import BeautifulSoup
+from tqdm import tqdm
+
+from utils.workers import get_worker_count
 
 BASE_URL = "https://mathshistory.st-andrews.ac.uk/Biographies/"
-OUTPUT_DIR = os.path.join(os.path.dirname(__file__) , "..", "store/md")
+OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "store/md")
+
+WORKERS = get_worker_count()
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
-session = requests.Session()
+
 
 def get_biography_links(letter_url):
+    session = requests.Session()
     resp = session.get(letter_url)
     resp.raise_for_status()
     soup = BeautifulSoup(resp.text, "html.parser")
@@ -24,6 +32,7 @@ def get_biography_links(letter_url):
         bio_links.append(full_url)
     return bio_links
 
+
 def convert_html_to_markdown(html):
     h = html2text.HTML2Text()
     h.ignore_links = False
@@ -32,6 +41,7 @@ def convert_html_to_markdown(html):
     while "\n\n" in md:
         md = md.replace("\n\n", "\n")
     return md
+
 
 def save_markdown(url, markdown):
     path = urlparse(url).path
@@ -61,6 +71,9 @@ def save_markdown(url, markdown):
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(markdown)
 
+    return filename
+
+
 def clean_html(html: str) -> str:
     while "<!--noindex-->" in html and "<!--endnoindex-->" in html:
         start = html.find("<!--noindex-->")
@@ -81,47 +94,81 @@ def clean_html(html: str) -> str:
 
     return "\n".join(filtered)
 
-def save_biography(bio_url):
-    print(f"Fetching biography: {bio_url}")
-    resp = session.get(bio_url)
-    resp.raise_for_status()
 
-    if resp.encoding.lower() != 'utf-8':
-        resp.encoding = 'utf-8'  # Force UTF-8 encoding for the response
+def process_biography(bio_url):
+    try:
+        session = requests.Session()
+        resp = session.get(bio_url)
+        resp.raise_for_status()
 
-    html = clean_html(resp.text)
-    soup = BeautifulSoup(html, "html.parser")
+        if resp.encoding.lower() != 'utf-8':
+            resp.encoding = 'utf-8'
 
-    meta_tag = soup.new_tag("meta")
-    meta_tag.attrs["charset"] = "utf-8"
-    if soup.head is None:
-        head_tag = soup.new_tag("head")
-        head_tag.append(meta_tag)
-        if soup.html is None:
-            html_tag = soup.new_tag("html")
-            html_tag.append(head_tag)
-            soup.append(html_tag)
+        html = clean_html(resp.text)
+        soup = BeautifulSoup(html, "html.parser")
+
+        meta_tag = soup.new_tag("meta")
+        meta_tag.attrs["charset"] = "utf-8"
+        if soup.head is None:
+            head_tag = soup.new_tag("head")
+            head_tag.append(meta_tag)
+            if soup.html is None:
+                html_tag = soup.new_tag("html")
+                html_tag.append(head_tag)
+                soup.append(html_tag)
+            else:
+                soup.html.insert(0, head_tag)
         else:
-            soup.html.insert(0, head_tag)
-    else:
-        soup.head.insert(0, meta_tag)
+            soup.head.insert(0, meta_tag)
 
-    for a in soup.find_all("a", href=True):
-        a["href"] = urljoin(bio_url, a["href"])
+        for a in soup.find_all("a", href=True):
+            a["href"] = urljoin(bio_url, a["href"])
 
-    markdown = convert_html_to_markdown(str(soup))
-    save_markdown(bio_url, markdown)
+        markdown = convert_html_to_markdown(str(soup))
+        filename = save_markdown(bio_url, markdown)
+        return True, filename
+    except Exception as e:
+        return False, f"Error processing {bio_url}: {str(e)}"
 
 
 def crawl_biographies():
-    for letter_url in [f"{BASE_URL}letter-{chr(letter)}/" for letter in range(ord('a'), ord('z') + 1)]:
+    letters = [chr(letter) for letter in range(ord('a'), ord('z') + 1)]
+    all_bio_links = []
+    for letter in letters:
+        letter_url = f"{BASE_URL}letter-{letter}/"
         print(f"Processing letter page: {letter_url}")
-        bio_links = get_biography_links(letter_url)
-        for bio_url in bio_links:
-            try:
-                save_biography(bio_url)
-            except Exception as e:
-                raise Exception(f"Failed to fetch or parse {bio_url}") from e
+        try:
+            bio_links = get_biography_links(letter_url)
+            all_bio_links.extend(bio_links)
+            print(f"Found {len(bio_links)} biographies for letter '{letter}'")
+        except Exception as e:
+            print(f"Error getting links for letter {letter}: {str(e)}")
+
+    print(f"Processing {len(all_bio_links)} biographies with {WORKERS} workers")
+
+    success_count = 0
+    error_count = 0
+
+    with ProcessPoolExecutor(max_workers=WORKERS) as executor:
+        with tqdm(total=len(all_bio_links), desc="Fetching biographies") as pbar:
+            future_to_url = {executor.submit(process_biography, url): url for url in all_bio_links}
+            for future in concurrent.futures.as_completed(future_to_url):
+                url = future_to_url[future]
+                try:
+                    success, result = future.result()
+                    if success:
+                        success_count += 1
+                    else:
+                        error_count += 1
+                        print(f"\n{result}")
+                except Exception as exc:
+                    print(f"\nError processing {url}: {exc}")
+                    error_count += 1
+
+                pbar.update(1)
+
+    print(f"Completed: {success_count} succeeded, {error_count} failed")
+    return success_count, error_count
 
 
 if __name__ == "__main__":

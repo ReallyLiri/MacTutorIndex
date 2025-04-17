@@ -10,4 +10,5 @@ dependencies = [
     "html2text>=2025.4.15",
     "openai>=1.74.0",
     "requests>=2.32.3",
+    "tqdm>=4.66.0",
 ]

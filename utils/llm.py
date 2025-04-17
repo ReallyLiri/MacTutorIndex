@@ -10,6 +10,7 @@ if not anthropic_api_key and not openai_api_key:
 
 openai_client = OpenAI() if openai_api_key else None
 
+
 def anthropic_query(text, prompt, max_tokens=1000, temperature=0):
     try:
         headers = {
@@ -89,6 +90,7 @@ def query_llm(text, prompt, max_tokens=1000, temperature=0):
         return openai_query(prompt, text, instructions, max_tokens, temperature)
     elif anthropic_api_key:
         return anthropic_query(text, prompt, max_tokens, temperature)
+
 
 def extract_json_from_response(response_str):
     if not response_str:

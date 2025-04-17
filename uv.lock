@@ -185,6 +185,7 @@ dependencies = [
     { name = "html2text" },
     { name = "openai" },
     { name = "requests" },
+    { name = "tqdm" },
 ]
 
 [package.metadata]
@@ -194,6 +195,7 @@ requires-dist = [
     { name = "html2text", specifier = ">=2025.4.15" },
     { name = "openai", specifier = ">=1.74.0" },
     { name = "requests", specifier = ">=2.32.3" },
+    { name = "tqdm", specifier = ">=4.66.0" },
 ]
 
 [[package]]
