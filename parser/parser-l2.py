@@ -62,9 +62,7 @@ Return ONLY a valid JSON object with those fields, ensure it's proper JSON forma
             connections_data = json.loads(connections_str)
             result_data.update(connections_data)
         except json.JSONDecodeError as e:
-            print(
-                f"Error parsing JSON from connections response ({e}): {connections_str}"
-            )
+            print(f"Error parsing JSON from connections response ({e}): {connections_str}")
         except Exception as e:
             print(f"Unexpected error processing connections data: {e}")
 
@@ -78,9 +76,14 @@ def process_file(filename):
 
         l1_file = filename.replace(".md", ".json")
         l1_path = os.path.join(L1_INPUT_DIR, l1_file)
+        output_path = os.path.join(OUTPUT_DIR, l1_file)
 
         if not os.path.exists(l1_path):
             return False, filename, f"L1 data not found: {l1_file}"
+
+        force_run = os.environ.get("FORCE_RUN", "").lower() in ("1", "true", "yes")
+        if os.path.exists(output_path) and not force_run:
+            return True, filename, "Skipped (already exists)"
 
         with open(os.path.join(MD_INPUT_DIR, filename), "r", encoding="utf-8") as f:
             markdown_text = f.read()
@@ -89,7 +92,6 @@ def process_file(filename):
             l1_json_text = f.read()
 
         result = extract_biography_data(markdown_text, json.loads(l1_json_text))
-        output_path = os.path.join(OUTPUT_DIR, l1_file)
 
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(result)
@@ -115,10 +117,7 @@ def parse_biographies(filenames=None):
 
     with ProcessPoolExecutor(max_workers=WORKERS) as executor:
         with tqdm(total=len(filenames), desc="Processing biographies") as pbar:
-            future_to_file = {
-                executor.submit(process_file, filename): filename
-                for filename in filenames
-            }
+            future_to_file = {executor.submit(process_file, filename): filename for filename in filenames}
 
             for future in concurrent.futures.as_completed(future_to_file):
                 filename = future_to_file[future]
@@ -147,4 +146,4 @@ if __name__ == "__main__":
         "Leibniz.md",
         "Newton.md",
     ]
-    parse_biographies(sample_files)
+    parse_biographies()

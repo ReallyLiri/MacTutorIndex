@@ -15,9 +15,14 @@ Keep all code as minimal as possible with zero comments.
 ## Testing and Linting
 
 - Before completing a task, run any available tests
-- For Python code, run the following linting tools:
+- For Python code, ONLY run the following linting tools WHEN EXPLICITLY REQUESTED:
   - `uv run -m black <file>` to format the code
   - `uv run -m flake8 <file>` to check for code quality issues
+- NEVER run formatting or linting tools automatically
+- DO NOT apply automatic code formatting unless specifically asked
+- NEVER make whitespace-only changes to code
+- DO NOT attempt to fix style issues or spacing issues unless explicitly asked
+- PRESERVE all existing whitespace patterns in edited files
 
 ## Workflow Tools
 
