@@ -1,3 +1,4 @@
+import json
 import os
 import requests
 import time
@@ -56,8 +57,8 @@ def anthropic_query(text, prompt, max_tokens=None, temperature=0, max_retries=MA
 
                 return json_content
 
-            print("\n!!! Unexpected response format from Anthropic API")
-            return ""
+            print(f"\n!!! Unexpected response format from Anthropic API: {response_json}")
+            return None
 
         except requests.exceptions.HTTPError as e:
             error_str = str(e)
@@ -70,7 +71,7 @@ def anthropic_query(text, prompt, max_tokens=None, temperature=0, max_retries=MA
                 if retry_after and retry_after.isdigit():
                     wait_time = max(DEFAULT_WAIT_SECONDS, int(retry_after) + 1)
 
-                print(f"\n!!! Anthropic rate limit reached. Retrying in {wait_time:.2f}s... ({retries}/{max_retries})")
+                print(f"\nAnthropic rate limit reached. Retrying in {wait_time:.2f}s... ({retries}/{max_retries})")
                 time.sleep(wait_time)
             else:
                 print(f"\n!!! HTTP error from Anthropic API: {e}")
@@ -78,10 +79,10 @@ def anthropic_query(text, prompt, max_tokens=None, temperature=0, max_retries=MA
 
         except Exception as e:
             print(f"\n!!! Error querying Anthropic API: {e}")
-            return ""
+            return None
 
     print(f"\n!!! Max retries ({max_retries}) exceeded for Anthropic query")
-    return ""
+    return None
 
 
 def openai_query(question, text, instructions, max_tokens=None, creativity=0, max_retries=MAX_RETRIES):
@@ -121,18 +122,10 @@ def openai_query(question, text, instructions, max_tokens=None, creativity=0, ma
                 time.sleep(wait_time)
             else:
                 print(f"\n!!! Error querying OpenAI: {e}")
-                return ""
+                return None
 
     print(f"\n!!! Max retries ({max_retries}) exceeded for OpenAI query")
-    return ""
-
-
-def query_llm(text, prompt, max_tokens=None, temperature=0):
-    if openai_api_key:
-        instructions = "Extract exactly the data requested in the specified JSON format. Return ONLY valid JSON."
-        return openai_query(prompt, text, instructions, max_tokens, temperature)
-    elif anthropic_api_key:
-        return anthropic_query(text, prompt, max_tokens, temperature, max_retries=MAX_RETRIES)
+    return None
 
 
 def extract_json_from_response(response_str):
@@ -146,8 +139,20 @@ def extract_json_from_response(response_str):
 
         if 0 <= start_idx < end_idx:
             json_str = response_str[start_idx : end_idx + 1]
-            return json_str
-        return response_str
+            return json.loads(json_str)
+        else:
+            raise Exception(f"Invalid JSON format in response: {response_str}")
     except Exception as e:
         print("\n!!! Error extracting JSON from response", e)
-        return response_str
+        return None
+
+
+def query_llm(text, prompt, max_tokens=None, temperature=0):
+    if openai_api_key:
+        instructions = "Extract exactly the data requested in the specified JSON format. Return ONLY valid JSON."
+        res = openai_query(prompt, text, instructions, max_tokens, temperature)
+    elif anthropic_api_key:
+        res = anthropic_query(text, prompt, max_tokens, temperature, max_retries=MAX_RETRIES)
+    else:
+        return None
+    return extract_json_from_response(res)

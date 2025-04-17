@@ -1,17 +1,20 @@
+import concurrent.futures
 import json
 import os
-import concurrent.futures
 from concurrent.futures import ProcessPoolExecutor
+
 from tqdm import tqdm
 
+from utils.llm import query_llm
 from utils.workers import get_worker_count
-from utils.llm import query_llm, extract_json_from_response
 
 MD_INPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "store/md")
 L1_INPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "store/json/l1")
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "store/json/l2")
 
 WORKERS = get_worker_count(max_workers=4)
+
+FORCE_RUN = os.environ.get("FORCE_RUN", "").lower() in ("1", "true", "yes")
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -26,23 +29,12 @@ def extract_biography_data(text, l1_data):
 
 Return ONLY a JSON object with those fields, ensure it's valid JSON without comments."""
 
-    l2_data_str = query_llm(text, bio_prompt, max_tokens=2000)
-    if not l2_data_str:
-        print("Failed to get biography data")
-        return json.dumps(l1_data, indent=4, ensure_ascii=False)
+    l2_data = query_llm(text, bio_prompt, max_tokens=2000)
+    if not l2_data:
+        return None
 
-    try:
-        l2_data_str = extract_json_from_response(l2_data_str)
-        l2_data = json.loads(l2_data_str)
-
-        result_data = l1_data.copy()
-        result_data.update(l2_data)
-    except json.JSONDecodeError as e:
-        print(f"Error parsing JSON from response ({e}): {l2_data_str}")
-        return json.dumps(l1_data, indent=4, ensure_ascii=False)
-    except Exception as e:
-        print(f"Unexpected error processing biography data: {e}")
-        return json.dumps(l1_data, indent=4, ensure_ascii=False)
+    result_data = l1_data.copy()
+    result_data.update(l2_data)
 
     connections_prompt = f"""Given the markdown-formatted biography text, and the following connections:
 [{", ".join(l1_data["connections"])}]
@@ -55,16 +47,10 @@ Extract the following structured JSON fields:
 
 Return ONLY a valid JSON object with those fields, ensure it's proper JSON format."""
 
-    connections_str = query_llm(text, connections_prompt, max_tokens=2000)
-    if connections_str:
-        try:
-            connections_str = extract_json_from_response(connections_str)
-            connections_data = json.loads(connections_str)
-            result_data.update(connections_data)
-        except json.JSONDecodeError as e:
-            print(f"Error parsing JSON from connections response ({e}): {connections_str}")
-        except Exception as e:
-            print(f"Unexpected error processing connections data: {e}")
+    connections_data = query_llm(text, connections_prompt, max_tokens=5000)
+    if not connections_data:
+        return None
+    result_data.update(connections_data)
 
     return json.dumps(result_data, indent=4, ensure_ascii=False)
 
@@ -81,8 +67,7 @@ def process_file(filename):
         if not os.path.exists(l1_path):
             return False, filename, f"L1 data not found: {l1_file}"
 
-        force_run = os.environ.get("FORCE_RUN", "").lower() in ("1", "true", "yes")
-        if os.path.exists(output_path) and not force_run:
+        if os.path.exists(output_path) and not FORCE_RUN:
             return True, filename, "Skipped (already exists)"
 
         with open(os.path.join(MD_INPUT_DIR, filename), "r", encoding="utf-8") as f:
@@ -92,6 +77,9 @@ def process_file(filename):
             l1_json_text = f.read()
 
         result = extract_biography_data(markdown_text, json.loads(l1_json_text))
+
+        if not result:
+            return False, filename, "failed"
 
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(result)
