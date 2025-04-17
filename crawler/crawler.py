@@ -37,6 +37,27 @@ def save_markdown(url, markdown):
     path = urlparse(url).path
     filename = os.path.basename(path.strip("/")) + ".md"
     filepath = os.path.join(OUTPUT_DIR, filename)
+
+    replacements = {
+        "Ã¶": "ö",
+        "Ã¤": "ä",
+        "Ã¼": "ü",
+        "Ã": "Ä",
+        "Ã©": "é",
+        "Ã¨": "è",
+        "Ã¡": "á",
+        "Ã ": "à",
+        "Ã¢": "â",
+        "Ã®": "î",
+        "Ã´": "ô",
+        "Ã»": "û",
+        "Ã§": "ç",
+        "Ã±": "ñ",
+    }
+
+    for wrong, correct in replacements.items():
+        markdown = markdown.replace(wrong, correct)
+
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(markdown)
 
@@ -64,10 +85,30 @@ def save_biography(bio_url):
     print(f"Fetching biography: {bio_url}")
     resp = session.get(bio_url)
     resp.raise_for_status()
+
+    if resp.encoding.lower() != 'utf-8':
+        resp.encoding = 'utf-8'  # Force UTF-8 encoding for the response
+
     html = clean_html(resp.text)
     soup = BeautifulSoup(html, "html.parser")
+
+    meta_tag = soup.new_tag("meta")
+    meta_tag.attrs["charset"] = "utf-8"
+    if soup.head is None:
+        head_tag = soup.new_tag("head")
+        head_tag.append(meta_tag)
+        if soup.html is None:
+            html_tag = soup.new_tag("html")
+            html_tag.append(head_tag)
+            soup.append(html_tag)
+        else:
+            soup.html.insert(0, head_tag)
+    else:
+        soup.head.insert(0, meta_tag)
+
     for a in soup.find_all("a", href=True):
         a["href"] = urljoin(bio_url, a["href"])
+
     markdown = convert_html_to_markdown(str(soup))
     save_markdown(bio_url, markdown)
 
