@@ -11,4 +11,7 @@ dependencies = [
     "openai>=1.74.0",
     "requests>=2.32.3",
     "tqdm>=4.66.0",
+    "firebase-admin>=6.5.0",
+    "black>=25.1.0",
+    "flake8>=7.2.0",
 ]

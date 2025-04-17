@@ -36,3 +36,10 @@ Keep all code as minimal as possible with zero comments.
 - `OPENAI_API_KEY` - For OpenAI API access
 - `ANTHROPIC_API_KEY` - For Anthropic API access
 - `WORKER_COUNT` - Number of worker processes for parallel tasks (defaults to CPU count - 1 for crawler, min(CPU count - 1, 4) for parser)
+- `FIREBASE_TYPE` - Firebase service account type
+- `FIREBASE_PROJECT_ID` - Firebase project ID
+- `FIREBASE_PRIVATE_KEY_ID` - Firebase private key ID
+- `FIREBASE_PRIVATE_KEY` - Firebase private key (with escaped newlines as \n)
+- `FIREBASE_CLIENT_EMAIL` - Firebase client email
+- `FIREBASE_CLIENT_ID` - Firebase client ID
+- `FIREBASE_CLIENT_X509_CERT_URL` - Firebase client x509 certificate URL

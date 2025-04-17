@@ -43,3 +43,24 @@ WORKER_COUNT=2 uv run parser/parser-l2.py
 ```
 
 Make sure to have `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` set in order to use the level 2 parser.
+
+### Uploader
+
+The uploader sends the extracted data to Firebase.
+
+```bash
+# Upload all markdown files and JSON data to Firebase
+uv run upload/uploader.py
+
+# Control the number of worker processes
+WORKER_COUNT=2 uv run upload/uploader.py
+```
+
+Required environment variables for Firebase:
+- `FIREBASE_TYPE`
+- `FIREBASE_PROJECT_ID`
+- `FIREBASE_PRIVATE_KEY_ID`
+- `FIREBASE_PRIVATE_KEY`
+- `FIREBASE_CLIENT_EMAIL`
+- `FIREBASE_CLIENT_ID`
+- `FIREBASE_CLIENT_X509_CERT_URL`
