@@ -92,15 +92,11 @@ def upload_all_data():
 
     l1_files = [f for f in os.listdir(L1_DIR) if f.endswith(".json")]
     print(f"Found {len(l1_files)} L1 JSON files to upload")
-    parallel_upload(
-        l1_files, upload_json_file, "Uploading L1 JSON files", "l1"
-    )
+    parallel_upload(l1_files, upload_json_file, "Uploading L1 JSON files", "l1")
 
     l2_files = [f for f in os.listdir(L2_DIR) if f.endswith(".json")]
     print(f"Found {len(l2_files)} L2 JSON files to upload")
-    parallel_upload(
-        l2_files, upload_json_file, "Uploading L2 JSON files", "l2"
-    )
+    parallel_upload(l2_files, upload_json_file, "Uploading L2 JSON files", "l2")
 
 
 if __name__ == "__main__":

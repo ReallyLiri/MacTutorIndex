@@ -26,7 +26,13 @@ def get_biography_links(letter_url):
     bio_links = []
     for a in soup.select("a[href^='../']"):
         href = a.get("href")
-        if href == "../" or href.startswith("../../") or href.startswith("../letter-") or href.startswith("../category-") or "/chronological/" in href:
+        if (
+            href == "../"
+            or href.startswith("../../")
+            or href.startswith("../letter-")
+            or href.startswith("../category-")
+            or "/chronological/" in href
+        ):
             continue
         full_url = urljoin(letter_url, href)
         bio_links.append(full_url)
@@ -101,8 +107,8 @@ def process_biography(bio_url):
         resp = session.get(bio_url)
         resp.raise_for_status()
 
-        if resp.encoding.lower() != 'utf-8':
-            resp.encoding = 'utf-8'
+        if resp.encoding.lower() != "utf-8":
+            resp.encoding = "utf-8"
 
         html = clean_html(resp.text)
         soup = BeautifulSoup(html, "html.parser")
@@ -132,7 +138,7 @@ def process_biography(bio_url):
 
 
 def crawl_biographies():
-    letters = [chr(letter) for letter in range(ord('a'), ord('z') + 1)]
+    letters = [chr(letter) for letter in range(ord("a"), ord("z") + 1)]
     all_bio_links = []
     for letter in letters:
         letter_url = f"{BASE_URL}letter-{letter}/"
@@ -151,7 +157,9 @@ def crawl_biographies():
 
     with ProcessPoolExecutor(max_workers=WORKERS) as executor:
         with tqdm(total=len(all_bio_links), desc="Fetching biographies") as pbar:
-            future_to_url = {executor.submit(process_biography, url): url for url in all_bio_links}
+            future_to_url = {
+                executor.submit(process_biography, url): url for url in all_bio_links
+            }
             for future in concurrent.futures.as_completed(future_to_url):
                 url = future_to_url[future]
                 try:

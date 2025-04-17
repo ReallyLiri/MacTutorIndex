@@ -16,7 +16,7 @@ def anthropic_query(text, prompt, max_tokens=1000, temperature=0):
         headers = {
             "Content-Type": "application/json",
             "x-api-key": anthropic_api_key,
-            "anthropic-version": "2023-06-01"
+            "anthropic-version": "2023-06-01",
         }
 
         combined_message = f"{text}\n\n{prompt}"
@@ -25,16 +25,12 @@ def anthropic_query(text, prompt, max_tokens=1000, temperature=0):
             "model": "claude-3-7-sonnet-20250219",
             "max_tokens": max_tokens,
             "temperature": temperature,
-            "messages": [
-                {"role": "user", "content": combined_message}
-            ],
-            "system": "You are a data extraction assistant. Extract exactly the data requested in the JSON format specified. Return ONLY valid JSON without any explanations or markdown formatting."
+            "messages": [{"role": "user", "content": combined_message}],
+            "system": "You are a data extraction assistant. Extract exactly the data requested in the JSON format specified. Return ONLY valid JSON without any explanations or markdown formatting.",
         }
 
         response = requests.post(
-            "https://api.anthropic.com/v1/messages",
-            headers=headers,
-            json=data
+            "https://api.anthropic.com/v1/messages", headers=headers, json=data
         )
 
         response.raise_for_status()
@@ -72,13 +68,15 @@ def openai_query(question, text, instructions, max_tokens=1000, creativity=0):
                 {"role": "system", "content": instructions},
             ],
             max_tokens=max_tokens,
-            temperature=creativity
+            temperature=creativity,
         )
         if len(response.choices) != 1:
             print("!!! Unexpected response from OpenAI", response)
-        if response.choices[0].finish_reason != 'stop':
+        if response.choices[0].finish_reason != "stop":
             print("!!! OpenAI did not finish processing the request", response)
-        return response.choices[0].message.content.lstrip("```json").rstrip("```").strip()
+        return (
+            response.choices[0].message.content.lstrip("```json").rstrip("```").strip()
+        )
     except Exception as e:
         print(f"!!! Error querying OpenAI: {e}")
         return ""
@@ -98,11 +96,11 @@ def extract_json_from_response(response_str):
         return None
 
     try:
-        start_idx = response_str.find('{')
-        end_idx = response_str.rfind('}')
+        start_idx = response_str.find("{")
+        end_idx = response_str.rfind("}")
 
         if 0 <= start_idx < end_idx:
-            json_str = response_str[start_idx:end_idx + 1]
+            json_str = response_str[start_idx : end_idx + 1]
             return json_str
         return response_str
     except Exception as e:
