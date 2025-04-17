@@ -1,7 +1,6 @@
 import json
 import os
 import re
-from urllib.parse import urljoin
 
 INPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "store/md")
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "store/json/l1")
@@ -96,9 +95,9 @@ def extract_connections(text, id):
         for link in connections:
             clean_link = link.rstrip('/')
             # Skip self-links (links to the current biography)
-            if (f"Biographies/{id}" not in clean_link and 
-                '#reference-' not in clean_link and 
-                '/quotations' not in clean_link and 
+            if (f"Biographies/{id}" not in clean_link and
+                '#reference-' not in clean_link and
+                '/quotations' not in clean_link and
                 '/poster/' not in clean_link):
                 # Remove the prefix
                 if clean_link.startswith(prefix):
