@@ -40,8 +40,11 @@ def extract_date_info(text_section):
     if year_match:
         try:
             info["year"] = int(year_match.group(2))
+            has_month_day = year_match.group(1) is not None
             info["approx"] = (
-                "approx" in text_section.lower() or "about" in text_section.lower()
+                "approx" in text_section.lower() or 
+                "about" in text_section.lower() or 
+                not has_month_day
             )
         except ValueError:
             pass

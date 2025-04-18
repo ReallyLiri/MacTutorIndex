@@ -15,9 +15,7 @@ L2_DIR = os.path.join(os.path.dirname(__file__), "..", "store/json/l2")
 WORKERS = get_worker_count()
 os.environ.get("WORKER_COUNT", WORKERS)
 
-cred = credentials.Certificate(
-    os.path.join(os.path.dirname(__file__), "..", "gcloud-sa.json")
-)
+cred = credentials.Certificate(os.path.join(os.path.dirname(__file__), "..", "gcloud-sa.json"))
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
@@ -85,19 +83,25 @@ def parallel_upload(files, upload_func, desc, collection=None):
     return success_count, error_count
 
 
-def upload_all_data():
-    md_files = [f for f in os.listdir(MD_DIR) if f.endswith(".md")]
-    print(f"Found {len(md_files)} markdown files to upload")
-    parallel_upload(md_files, upload_md_file, "Uploading markdown files")
-
-    l1_files = [f for f in os.listdir(L1_DIR) if f.endswith(".json")]
-    print(f"Found {len(l1_files)} L1 JSON files to upload")
-    parallel_upload(l1_files, upload_json_file, "Uploading L1 JSON files", "l1")
-
+def upload_l2():
     l2_files = [f for f in os.listdir(L2_DIR) if f.endswith(".json")]
     print(f"Found {len(l2_files)} L2 JSON files to upload")
     parallel_upload(l2_files, upload_json_file, "Uploading L2 JSON files", "l2")
 
 
+def upload_l1():
+    l1_files = [f for f in os.listdir(L1_DIR) if f.endswith(".json")]
+    print(f"Found {len(l1_files)} L1 JSON files to upload")
+    parallel_upload(l1_files, upload_json_file, "Uploading L1 JSON files", "l1")
+
+
+def upload_md():
+    md_files = [f for f in os.listdir(MD_DIR) if f.endswith(".md")]
+    print(f"Found {len(md_files)} markdown files to upload")
+    parallel_upload(md_files, upload_md_file, "Uploading markdown files")
+
+
 if __name__ == "__main__":
-    upload_all_data()
+    # upload_md()
+    upload_l1()
+    upload_l2()
