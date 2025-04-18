@@ -1,9 +1,11 @@
 import os
 import json
+import sys
 from concurrent.futures import ThreadPoolExecutor
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+from google.api_core.exceptions import ResourceExhausted
 from tqdm import tqdm
 
 from utils.workers import get_worker_count
@@ -27,8 +29,13 @@ def upload_md_file(filename):
             content = f.read()
 
         doc_id = filename.replace(".md", "")
-        db.collection("md").document(doc_id).set({"md": content})
-        return True, filename, None
+        try:
+            db.collection("md").document(doc_id).set({"md": content})
+            return True, filename, None
+        except ResourceExhausted as e:
+            print(f"\n\nFIREBASE RATE LIMIT EXCEEDED: {str(e)}")
+            print("Exiting program immediately to respect Firebase quotas.")
+            sys.exit(1)
     except Exception as e:
         return False, filename, str(e)
 
@@ -44,8 +51,13 @@ def upload_json_file(filename, collection):
             data = json.load(f)
 
         doc_id = filename.replace(".json", "")
-        db.collection(collection).document(doc_id).set(data)
-        return True, filename, None
+        try:
+            db.collection(collection).document(doc_id).set(data)
+            return True, filename, None
+        except ResourceExhausted as e:
+            print(f"\n\nFIREBASE RATE LIMIT EXCEEDED: {str(e)}")
+            print("Exiting program immediately to respect Firebase quotas.")
+            sys.exit(1)
     except Exception as e:
         return False, filename, str(e)
 
@@ -102,6 +114,6 @@ def upload_md():
 
 
 if __name__ == "__main__":
-    # upload_md()
+    upload_md()
     upload_l1()
     upload_l2()
