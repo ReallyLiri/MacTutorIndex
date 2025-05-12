@@ -6,3 +6,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 gcloud-sa.json
+node_modules/
+.vite/
+dist/
