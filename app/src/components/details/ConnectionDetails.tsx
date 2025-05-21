@@ -60,7 +60,11 @@ const ConnectionDetails = ({
     <Card className="max-w-md">
       <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-xl">Connection Details</CardTitle>
-        <Button variant="ghost" size="icon" onClick={onClose}>
+        <Button
+          variant="ghost"
+          onClick={onClose}
+          className="w-12 h-12 ml-auto flex flex-col items-center justify-center"
+        >
           <X className="h-4 w-4" />
         </Button>
       </CardHeader>
@@ -123,15 +127,6 @@ const ConnectionDetails = ({
                   </a>
                 </div>
               ))}
-            </div>
-          )}
-
-          {sourceExcerpts.length === 0 && targetExcerpts.length === 0 && (
-            <div className="text-center py-4 text-muted-foreground">
-              <p>
-                No detailed information about this connection is available in
-                the biographies.
-              </p>
             </div>
           )}
         </div>

@@ -1,11 +1,11 @@
-import { X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Mathematician } from '@/types';
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Mathematician } from "@/types";
 
 interface IdentityCardProps {
   mathematician: Mathematician | null;
@@ -15,43 +15,51 @@ interface IdentityCardProps {
 const IdentityCard = ({ mathematician, onClose }: IdentityCardProps) => {
   if (!mathematician) return null;
 
-  const { 
-    name, 
-    summary, 
-    born, 
-    died, 
-    picture, 
-    lived_in, 
-    worked_in, 
-    religions, 
-    profession, 
-    institution_affiliation, 
-    connections
+  const {
+    name,
+    summary,
+    born,
+    died,
+    picture,
+    lived_in,
+    worked_in,
+    religions,
+    profession,
+    institution_affiliation,
+    connections,
   } = mathematician;
 
   const formatYear = (year: number | null, approx: boolean) => {
-    if (year === null) return 'Unknown';
-    return `${approx ? 'c. ' : ''}${year}`;
+    if (year === null) return "Unknown";
+    return `${approx ? "c. " : ""}${year}`;
   };
 
   const formatPlace = (place: string, link?: string) => {
-    if (!place) return 'Unknown';
-    if (link) return <a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">{place}</a>;
+    if (!place) return "Unknown";
+    if (link)
+      return (
+        <a
+          href={link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:underline"
+        >
+          {place}
+        </a>
+      );
     return place;
   };
 
   const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
   };
 
   return (
     <Card className="w-full max-w-md h-full flex flex-col">
-      <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-xl">Mathematician Profile</CardTitle>
-        <Button variant="ghost" size="icon" onClick={onClose}>
-          <X className="h-4 w-4" />
-        </Button>
-      </CardHeader>
       <ScrollArea className="flex-1">
         <CardContent className="p-4">
           <div className="flex items-center mb-4">
@@ -62,13 +70,21 @@ const IdentityCard = ({ mathematician, onClose }: IdentityCardProps) => {
             <div>
               <h2 className="text-2xl font-bold">{name}</h2>
               <p className="text-sm text-muted-foreground">
-                {formatYear(born.year, born.approx)} - {formatYear(died.year, died.approx)}
+                {formatYear(born.year, born.approx)} -{" "}
+                {formatYear(died.year, died.approx)}
               </p>
             </div>
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              className="w-12 h-12 ml-auto flex flex-col items-center justify-center"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
 
           <Tabs defaultValue="summary" className="w-full">
-            <TabsList className="grid grid-cols-3 mb-4">
+            <TabsList className="grid grid-cols-3 mb-4 gap-2">
               <TabsTrigger value="summary">Summary</TabsTrigger>
               <TabsTrigger value="biography">Biography</TabsTrigger>
               <TabsTrigger value="connections">Connections</TabsTrigger>
@@ -87,75 +103,105 @@ const IdentityCard = ({ mathematician, onClose }: IdentityCardProps) => {
                 <div>
                   <h3 className="text-sm font-semibold mb-1">Birth</h3>
                   <p className="text-sm">
-                    {formatYear(born.year, born.approx)} in {formatPlace(born.place, born.link)}
+                    {formatYear(born.year, born.approx)} in{" "}
+                    {formatPlace(born.place, born.link)}
                   </p>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div>
                   <h3 className="text-sm font-semibold mb-1">Death</h3>
                   <p className="text-sm">
-                    {formatYear(died.year, died.approx)} in {formatPlace(died.place, died.link)}
+                    {formatYear(died.year, died.approx)} in{" "}
+                    {formatPlace(died.place, died.link)}
                   </p>
                 </div>
-                
+
                 <Separator />
-                
+
                 {lived_in && lived_in.length > 0 && (
                   <div>
                     <h3 className="text-sm font-semibold mb-1">Lived in</h3>
                     <div className="flex flex-wrap gap-1">
                       {lived_in.map((place, i) => (
-                        <span key={i} className="text-xs bg-secondary text-secondary-foreground rounded-full px-2 py-1">{place}</span>
+                        <span
+                          key={i}
+                          className="text-xs bg-secondary text-secondary-foreground rounded-full px-2 py-1"
+                        >
+                          {place}
+                        </span>
                       ))}
                     </div>
                   </div>
                 )}
-                
+
                 {worked_in && worked_in.length > 0 && (
                   <div>
                     <h3 className="text-sm font-semibold mb-1">Worked in</h3>
                     <div className="flex flex-wrap gap-1">
                       {worked_in.map((place, i) => (
-                        <span key={i} className="text-xs bg-secondary text-secondary-foreground rounded-full px-2 py-1">{place}</span>
+                        <span
+                          key={i}
+                          className="text-xs bg-secondary text-secondary-foreground rounded-full px-2 py-1"
+                        >
+                          {place}
+                        </span>
                       ))}
                     </div>
                   </div>
                 )}
-                
+
                 {religions && religions.length > 0 && (
                   <div>
                     <h3 className="text-sm font-semibold mb-1">Religion</h3>
                     <div className="flex flex-wrap gap-1">
                       {religions.map((religion, i) => (
-                        <span key={i} className="text-xs bg-secondary text-secondary-foreground rounded-full px-2 py-1">{religion}</span>
+                        <span
+                          key={i}
+                          className="text-xs bg-secondary text-secondary-foreground rounded-full px-2 py-1"
+                        >
+                          {religion}
+                        </span>
                       ))}
                     </div>
                   </div>
                 )}
-                
+
                 {profession && profession.length > 0 && (
                   <div>
                     <h3 className="text-sm font-semibold mb-1">Profession</h3>
                     <div className="flex flex-wrap gap-1">
                       {profession.map((prof, i) => (
-                        <span key={i} className="text-xs bg-secondary text-secondary-foreground rounded-full px-2 py-1">{prof}</span>
+                        <span
+                          key={i}
+                          className="text-xs bg-secondary text-secondary-foreground rounded-full px-2 py-1"
+                        >
+                          {prof}
+                        </span>
                       ))}
                     </div>
                   </div>
                 )}
-                
-                {institution_affiliation && institution_affiliation.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-semibold mb-1">Institutions</h3>
-                    <div className="flex flex-wrap gap-1">
-                      {institution_affiliation.map((inst, i) => (
-                        <span key={i} className="text-xs bg-secondary text-secondary-foreground rounded-full px-2 py-1">{inst}</span>
-                      ))}
+
+                {institution_affiliation &&
+                  institution_affiliation.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold mb-1">
+                        Institutions
+                      </h3>
+                      <div className="flex flex-wrap gap-1">
+                        {institution_affiliation.map((inst, i) => (
+                          <span
+                            key={i}
+                            className="text-xs bg-secondary text-secondary-foreground rounded-full px-2 py-1"
+                          >
+                            {inst}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
             </TabsContent>
 
@@ -164,12 +210,16 @@ const IdentityCard = ({ mathematician, onClose }: IdentityCardProps) => {
                 {connections && connections.length > 0 ? (
                   connections.map((connection, i) => (
                     <div key={i} className="border rounded-md p-3">
-                      <h3 className="text-sm font-semibold capitalize">{connection.connection_type}</h3>
+                      <h3 className="text-sm font-semibold capitalize">
+                        {connection.connection_type}
+                      </h3>
                       <p className="text-sm">{connection.person}</p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground">No connection data available.</p>
+                  <p className="text-sm text-muted-foreground">
+                    No connection data available.
+                  </p>
                 )}
               </div>
             </TabsContent>
