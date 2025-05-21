@@ -24,30 +24,31 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
   const [hoverNode, setHoverNode] = useState<NodeObject<GraphNode> | null>(
     null,
   );
-
-  const updateHighlight = () => {
-    setHighlightNodes(highlightNodes);
-    setHighlightLinks(highlightLinks);
-  };
+  const [hoverLink, setHoverLink] = useState<LinkObject<
+    NodeObject<GraphNode>,
+    GraphLink
+  > | null>(null);
 
   const handleNodeHover = useCallback(
     (node: GraphNode | null) => {
-      highlightNodes.clear();
-      highlightLinks.clear();
+      const nodes = new Set<string>();
+      const links = new Set<string>();
 
       if (node) {
         setHoverNode(node);
-        highlightNodes.add(node.id);
+        nodes.add(node.id);
 
         if (data.links) {
           data.links.forEach((link) => {
-            const sourceId = link.source;
-            const targetId = link.target;
+            const sourceId =
+              typeof link.source === "object" ? link.source.id : link.source;
+            const targetId =
+              typeof link.target === "object" ? link.target.id : link.target;
 
             if (sourceId === node.id || targetId === node.id) {
-              highlightLinks.add(`${sourceId}-${targetId}`);
-              highlightNodes.add(sourceId);
-              highlightNodes.add(targetId);
+              links.add(`${sourceId}-${targetId}`);
+              nodes.add(sourceId);
+              nodes.add(targetId);
             }
           });
         }
@@ -55,9 +56,10 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
         setHoverNode(null);
       }
 
-      updateHighlight();
+      setHighlightNodes(nodes);
+      setHighlightLinks(links);
     },
-    [data.links, highlightLinks, highlightNodes, updateHighlight],
+    [data.links],
   );
 
   const handleNodeClick = useCallback(
@@ -73,10 +75,42 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
   );
 
   const handleLinkClick = useCallback(
-    (link: GraphLink) => {
-      onLinkClick(link);
+    (link: LinkObject<GraphNode, GraphLink>) => {
+      // Make sure we have the data we need for the connection details
+      const linkData: GraphLink = {
+        source: link.source.id || (link.source as string),
+        target: link.target.id || (link.target as string),
+        type: link.type || "",
+      };
+
+      onLinkClick(linkData);
     },
     [onLinkClick],
+  );
+
+  const handleLinkHover = useCallback(
+    (link: LinkObject<GraphNode, GraphLink> | null) => {
+      setHoverLink(link);
+
+      const nodes = new Set<string>();
+      const links = new Set<string>();
+
+      if (link) {
+        const sourceId =
+          typeof link.source === "object" ? link.source.id : link.source;
+        const targetId =
+          typeof link.target === "object" ? link.target.id : link.target;
+
+        links.add(`${sourceId}-${targetId}`);
+
+        nodes.add(sourceId as string);
+        nodes.add(targetId as string);
+      }
+
+      setHighlightNodes(nodes);
+      setHighlightLinks(links);
+    },
+    [],
   );
 
   const resetView = useCallback(() => {
@@ -98,7 +132,7 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
         Reset View
       </Button>
 
-      {hoverNode && (
+      {hoverNode && !hoverLink && (
         <div
           className="absolute bg-background/90 border rounded-md p-2 z-50 shadow-lg backdrop-blur-sm"
           style={{
@@ -111,6 +145,48 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
           <p className="font-medium">{hoverNode.name}</p>
         </div>
       )}
+
+      {hoverLink && (
+        <div
+          className="absolute bg-background/90 border rounded-md p-2 z-50 shadow-lg backdrop-blur-sm"
+          style={{
+            left: `${
+              ((typeof hoverLink.source === "object"
+                ? hoverLink.source.x!
+                : 0) +
+                (typeof hoverLink.target === "object"
+                  ? hoverLink.target.x!
+                  : 0)) /
+              2
+            }px`,
+            top: `${
+              ((typeof hoverLink.source === "object"
+                ? hoverLink.source.y!
+                : 0) +
+                (typeof hoverLink.target === "object"
+                  ? hoverLink.target.y!
+                  : 0)) /
+              2
+            }px`,
+            transform: "translate(-50%, -100%)",
+            pointerEvents: "none",
+          }}
+        >
+          <p className="text-sm">
+            <span className="font-medium">
+              {typeof hoverLink.source === "object"
+                ? hoverLink.source.name
+                : ""}
+            </span>{" "}
+            <span className="text-muted-foreground">{hoverLink.type}</span>{" "}
+            <span className="font-medium">
+              {typeof hoverLink.target === "object"
+                ? hoverLink.target.name
+                : ""}
+            </span>
+          </p>
+        </div>
+      )}
       <ForceGraph2D
         ref={graphRef}
         graphData={data}
@@ -120,10 +196,34 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
         linkDirectionalArrowLength={3.5}
         linkDirectionalArrowRelPos={1}
         linkCurvature={0.25}
-        linkWidth={(link) =>
-          highlightLinks.has(`${link.source}-${link.target}`) ? 2 : 1
-        }
-        linkColor={(link) => link.color || "#999"}
+        linkWidth={(link) => {
+          const sourceId =
+            typeof link.source === "object" ? link.source.id : link.source;
+          const targetId =
+            typeof link.target === "object" ? link.target.id : link.target;
+          const linkId = `${sourceId}-${targetId}`;
+          return highlightLinks.has(linkId) ? 3 : 1;
+        }}
+        linkColor={(link) => {
+          const sourceId =
+            typeof link.source === "object" ? link.source.id : link.source;
+          const targetId =
+            typeof link.target === "object" ? link.target.id : link.target;
+          const linkId = `${sourceId}-${targetId}`;
+          return highlightLinks.has(linkId) ? "#ff9900" : link.color || "#999";
+        }}
+        linkDirectionalParticles={(link) => {
+          const sourceId =
+            typeof link.source === "object" ? link.source.id : link.source;
+          const targetId =
+            typeof link.target === "object" ? link.target.id : link.target;
+          const linkId = `${sourceId}-${targetId}`;
+          return highlightLinks.has(linkId) ? 5 : 0;
+        }}
+        linkDirectionalParticleWidth={3}
+        linkDirectionalParticleColor={() => "#ff9900"}
+        onLinkHover={handleLinkHover}
+        onLinkClick={handleLinkClick}
         nodeCanvasObject={(node, ctx, globalScale) => {
           const { x, y, name, color, val } = node;
           const fontSize = val * 1.2;
@@ -150,7 +250,6 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
         }}
         onNodeHover={handleNodeHover}
         onNodeClick={handleNodeClick}
-        onLinkClick={handleLinkClick}
         cooldownTicks={100}
         d3AlphaDecay={0.02}
         d3VelocityDecay={0.3}

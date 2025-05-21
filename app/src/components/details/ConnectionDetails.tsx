@@ -1,7 +1,7 @@
-import { X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { GraphLink, Mathematician } from '@/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { GraphLink, Mathematician } from "@/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface ConnectionDetailsProps {
   link: GraphLink | null;
@@ -9,44 +9,48 @@ interface ConnectionDetailsProps {
   onClose: () => void;
 }
 
-const ConnectionDetails = ({ link, mathematicians, onClose }: ConnectionDetailsProps) => {
+const ConnectionDetails = ({
+  link,
+  mathematicians,
+  onClose,
+}: ConnectionDetailsProps) => {
   if (!link) return null;
 
-  const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-  const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-  
+  const sourceId = link.source;
+  const targetId = link.target;
+
   const sourceMathematician = mathematicians[sourceId];
   const targetMathematician = mathematicians[targetId];
-  
+
   if (!sourceMathematician || !targetMathematician) return null;
 
   const createCitationUrl = (name: string, text: string) => {
-    const baseUrl = 'https://mathshistory.st-andrews.ac.uk/Biographies/';
-    const formattedName = name.split(' ').pop();
+    const baseUrl = "https://mathshistory.st-andrews.ac.uk/Biographies/";
+    const formattedName = name.split(" ").pop();
     return `${baseUrl}${formattedName}/#:~:text=${encodeURIComponent(text)}`;
   };
 
   const getConnectionExcerpts = () => {
     const sourceExcerpts: string[] = [];
     const targetExcerpts: string[] = [];
-    
-    const sourceSummary = sourceMathematician.summary || '';
-    const targetSummary = targetMathematician.summary || '';
-    
+
+    const sourceSummary = sourceMathematician.summary || "";
+    const targetSummary = targetMathematician.summary || "";
+
     const sourceSentences = sourceSummary.match(/[^.!?]+[.!?]+/g) || [];
     const targetSentences = targetSummary.match(/[^.!?]+[.!?]+/g) || [];
-    sourceSentences.forEach(sentence => {
+    sourceSentences.forEach((sentence) => {
       if (sentence.includes(targetMathematician.name)) {
         sourceExcerpts.push(sentence.trim());
       }
     });
-    
-    targetSentences.forEach(sentence => {
+
+    targetSentences.forEach((sentence) => {
       if (sentence.includes(sourceMathematician.name)) {
         targetExcerpts.push(sentence.trim());
       }
     });
-    
+
     return { sourceExcerpts, targetExcerpts };
   };
 
@@ -76,12 +80,17 @@ const ConnectionDetails = ({ link, mathematicians, onClose }: ConnectionDetailsP
 
           {sourceExcerpts.length > 0 && (
             <div className="border-l-2 border-primary pl-4 py-2">
-              <h4 className="text-sm font-semibold mb-2">From {sourceMathematician.name}'s biography:</h4>
+              <h4 className="text-sm font-semibold mb-2">
+                From {sourceMathematician.name}'s biography:
+              </h4>
               {sourceExcerpts.map((excerpt, i) => (
                 <div key={`source-${i}`} className="mb-2">
                   <p className="text-sm">{excerpt}</p>
-                  <a 
-                    href={createCitationUrl(sourceMathematician.name, excerpt.substring(0, 30))}
+                  <a
+                    href={createCitationUrl(
+                      sourceMathematician.name,
+                      excerpt.substring(0, 30),
+                    )}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs text-blue-500 hover:underline"
@@ -95,12 +104,17 @@ const ConnectionDetails = ({ link, mathematicians, onClose }: ConnectionDetailsP
 
           {targetExcerpts.length > 0 && (
             <div className="border-l-2 border-secondary pl-4 py-2">
-              <h4 className="text-sm font-semibold mb-2">From {targetMathematician.name}'s biography:</h4>
+              <h4 className="text-sm font-semibold mb-2">
+                From {targetMathematician.name}'s biography:
+              </h4>
               {targetExcerpts.map((excerpt, i) => (
                 <div key={`target-${i}`} className="mb-2">
                   <p className="text-sm">{excerpt}</p>
-                  <a 
-                    href={createCitationUrl(targetMathematician.name, excerpt.substring(0, 30))}
+                  <a
+                    href={createCitationUrl(
+                      targetMathematician.name,
+                      excerpt.substring(0, 30),
+                    )}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs text-blue-500 hover:underline"
@@ -114,7 +128,10 @@ const ConnectionDetails = ({ link, mathematicians, onClose }: ConnectionDetailsP
 
           {sourceExcerpts.length === 0 && targetExcerpts.length === 0 && (
             <div className="text-center py-4 text-muted-foreground">
-              <p>No detailed information about this connection is available in the biographies.</p>
+              <p>
+                No detailed information about this connection is available in
+                the biographies.
+              </p>
             </div>
           )}
         </div>
