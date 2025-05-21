@@ -58,9 +58,7 @@ const FilterPanel = ({
   };
 
   return (
-    <div
-      className={`transition-all duration-300 ${isCollapsed ? "w-20" : "w-80"} h-full flex flex-col bg-background border-r`}
-    >
+    <div className={`h-full flex flex-col bg-background border-r`}>
       {isCollapsed ? (
         <div className="p-4">
           <Button
@@ -103,7 +101,7 @@ const FilterPanel = ({
             </Button>
           </div>
           <Separator />
-          <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          <div className="flex-1 overflow-y-auto p-4 space-y-6 scroll-stable">
             <div>
               <div className="flex items-center justify-between cursor-pointer mb-2">
                 <span className="font-medium text-sm">Time Period</span>

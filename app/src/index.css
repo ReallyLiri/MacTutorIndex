@@ -32,6 +32,7 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  overflow: hidden;
 }
 
 h1 {
@@ -134,4 +135,8 @@ button:focus-visible {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.scroll-stable {
+  scrollbar-gutter: stable;
 }

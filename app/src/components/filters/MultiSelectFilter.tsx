@@ -82,21 +82,23 @@ const MultiSelectFilter = ({
             placeholder={placeholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-8"
           />
           <ScrollArea className="h-32">
             <div className="space-y-2">
               {filteredOptions.map((option) => (
-                <div key={option} className="flex items-center space-x-2 h-5">
+                <div
+                  key={option}
+                  className="flex items-start space-x-2 min-h-6"
+                >
                   <Checkbox
                     id={`${type}-${option}`}
                     checked={value.includes(option)}
                     onCheckedChange={() => handleToggle(option)}
-                    className="h-4 w-4 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                    className="h-4 w-4 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground mt-[0.2em]"
                   />
                   <label
                     htmlFor={`${type}-${option}`}
-                    className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    className="text-sm leading-2 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
                     {option}
                   </label>
