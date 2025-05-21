@@ -116,8 +116,9 @@ const FilterPanel = ({
                   updateDraftFilters({ ...draftFilters, yearRange })
                 }
               />
-              <div className="flex flex-row items-center gap-2 mt-2">
+              <div className="flex flex-row items-center gap-2 mt-3">
                 <Checkbox
+                  className="w-4 h-4 ml-1"
                   checked={includeBC}
                   onCheckedChange={() => setIncludeBC((b) => !b)}
                 />
