@@ -8,6 +8,27 @@ import { GraphData, GraphNode, GraphLink } from "@/types";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 
+type NodeReference = string | NodeObject<GraphNode>;
+type ForceGraphLink = LinkObject<NodeObject<GraphNode>, GraphLink>;
+
+interface GraphNodeWithCoords extends GraphNode {
+  x?: number;
+  y?: number;
+}
+
+interface NormalizedLink {
+  sourceId: string;
+  sourceName: string;
+  sourceX?: number;
+  sourceY?: number;
+  targetId: string;
+  targetName: string;
+  targetX?: number;
+  targetY?: number;
+  type: string;
+  color?: string;
+}
+
 interface GraphProps {
   data: GraphData;
   onNodeClick: (node: GraphNode) => void;
@@ -17,33 +38,75 @@ interface GraphProps {
 const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
   const graphRef =
     useRef<
-      ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>>
+      ForceGraphMethods<
+        NodeObject<GraphNode & string>,
+        LinkObject<GraphNode & string, GraphLink>
+      >
     >(undefined);
   const [highlightNodes, setHighlightNodes] = useState(new Set<string>());
   const [highlightLinks, setHighlightLinks] = useState(new Set<string>());
-  const [hoverNode, setHoverNode] = useState<NodeObject<GraphNode> | null>(
-    null,
+  const [hoverNode, setHoverNode] = useState<GraphNodeWithCoords | null>(null);
+  const [hoverLink, setHoverLink] = useState<NormalizedLink | null>(null);
+
+  const normalizeNodeReference = useCallback(
+    (
+      nodeRef: NodeReference,
+    ): { id: string; name: string; x?: number; y?: number } => {
+      if (typeof nodeRef === "object" && nodeRef !== null) {
+        return {
+          id: nodeRef.id,
+          name: nodeRef.name || "",
+          x: nodeRef.x,
+          y: nodeRef.y,
+        };
+      }
+
+      return {
+        id: nodeRef,
+        name: "",
+        x: undefined,
+        y: undefined,
+      };
+    },
+    [],
   );
-  const [hoverLink, setHoverLink] = useState<LinkObject<
-    NodeObject<GraphNode>,
-    GraphLink
-  > | null>(null);
+
+  const normalizeLink = useCallback(
+    (link: ForceGraphLink): NormalizedLink => {
+      const source = normalizeNodeReference(link.source);
+      const target = normalizeNodeReference(link.target);
+
+      return {
+        sourceId: source.id,
+        sourceName: source.name,
+        sourceX: source.x,
+        sourceY: source.y,
+        targetId: target.id,
+        targetName: target.name,
+        targetX: target.x,
+        targetY: target.y,
+        type: link.type || "",
+        color: link.color,
+      };
+    },
+    [normalizeNodeReference],
+  );
 
   const handleNodeHover = useCallback(
-    (node: GraphNode | null) => {
+    (node: NodeObject<GraphNode> | null) => {
       const nodes = new Set<string>();
       const links = new Set<string>();
 
       if (node) {
-        setHoverNode(node);
+        setHoverNode(node as unknown as GraphNodeWithCoords);
         nodes.add(node.id);
 
         if (data.links) {
           data.links.forEach((link) => {
-            const sourceId =
-              typeof link.source === "object" ? link.source.id : link.source;
-            const targetId =
-              typeof link.target === "object" ? link.target.id : link.target;
+            const normalizedLink = normalizeLink(
+              link as unknown as ForceGraphLink,
+            );
+            const { sourceId, targetId } = normalizedLink;
 
             if (sourceId === node.id || targetId === node.id) {
               links.add(`${sourceId}-${targetId}`);
@@ -59,7 +122,7 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
       setHighlightNodes(nodes);
       setHighlightLinks(links);
     },
-    [data.links],
+    [data.links, normalizeLink],
   );
 
   const handleNodeClick = useCallback(
@@ -75,42 +138,42 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
   );
 
   const handleLinkClick = useCallback(
-    (link: LinkObject<GraphNode, GraphLink>) => {
-      // Make sure we have the data we need for the connection details
+    (link: ForceGraphLink) => {
+      const normalizedLink = normalizeLink(link);
+
       const linkData: GraphLink = {
-        source: link.source.id || (link.source as string),
-        target: link.target.id || (link.target as string),
-        type: link.type || "",
+        source: normalizedLink.sourceId,
+        target: normalizedLink.targetId,
+        type: normalizedLink.type,
+        color: normalizedLink.color,
       };
 
       onLinkClick(linkData);
     },
-    [onLinkClick],
+    [onLinkClick, normalizeLink],
   );
 
   const handleLinkHover = useCallback(
-    (link: LinkObject<GraphNode, GraphLink> | null) => {
-      setHoverLink(link);
-
+    (link: ForceGraphLink | null) => {
       const nodes = new Set<string>();
       const links = new Set<string>();
 
       if (link) {
-        const sourceId =
-          typeof link.source === "object" ? link.source.id : link.source;
-        const targetId =
-          typeof link.target === "object" ? link.target.id : link.target;
+        const normalizedLink = normalizeLink(link);
+        setHoverLink(normalizedLink);
 
+        const { sourceId, targetId } = normalizedLink;
         links.add(`${sourceId}-${targetId}`);
-
-        nodes.add(sourceId as string);
-        nodes.add(targetId as string);
+        nodes.add(sourceId);
+        nodes.add(targetId);
+      } else {
+        setHoverLink(null);
       }
 
       setHighlightNodes(nodes);
       setHighlightLinks(links);
     },
-    [],
+    [normalizeLink],
   );
 
   const resetView = useCallback(() => {
@@ -150,40 +213,16 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
         <div
           className="absolute bg-background/90 border rounded-md p-2 z-50 shadow-lg backdrop-blur-sm"
           style={{
-            left: `${
-              ((typeof hoverLink.source === "object"
-                ? hoverLink.source.x!
-                : 0) +
-                (typeof hoverLink.target === "object"
-                  ? hoverLink.target.x!
-                  : 0)) /
-              2
-            }px`,
-            top: `${
-              ((typeof hoverLink.source === "object"
-                ? hoverLink.source.y!
-                : 0) +
-                (typeof hoverLink.target === "object"
-                  ? hoverLink.target.y!
-                  : 0)) /
-              2
-            }px`,
+            left: `${((hoverLink.sourceX || 0) + (hoverLink.targetX || 0)) / 2}px`,
+            top: `${((hoverLink.sourceY || 0) + (hoverLink.targetY || 0)) / 2}px`,
             transform: "translate(-50%, -100%)",
             pointerEvents: "none",
           }}
         >
           <p className="text-sm">
-            <span className="font-medium">
-              {typeof hoverLink.source === "object"
-                ? hoverLink.source.name
-                : ""}
-            </span>{" "}
+            <span className="font-medium">{hoverLink.sourceName}</span>{" "}
             <span className="text-muted-foreground">{hoverLink.type}</span>{" "}
-            <span className="font-medium">
-              {typeof hoverLink.target === "object"
-                ? hoverLink.target.name
-                : ""}
-            </span>
+            <span className="font-medium">{hoverLink.targetName}</span>
           </p>
         </div>
       )}
@@ -197,27 +236,20 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
         linkDirectionalArrowRelPos={1}
         linkCurvature={0.25}
         linkWidth={(link) => {
-          const sourceId =
-            typeof link.source === "object" ? link.source.id : link.source;
-          const targetId =
-            typeof link.target === "object" ? link.target.id : link.target;
-          const linkId = `${sourceId}-${targetId}`;
+          const normalized = normalizeLink(link as unknown as ForceGraphLink);
+          const linkId = `${normalized.sourceId}-${normalized.targetId}`;
           return highlightLinks.has(linkId) ? 3 : 1;
         }}
         linkColor={(link) => {
-          const sourceId =
-            typeof link.source === "object" ? link.source.id : link.source;
-          const targetId =
-            typeof link.target === "object" ? link.target.id : link.target;
-          const linkId = `${sourceId}-${targetId}`;
-          return highlightLinks.has(linkId) ? "#ff9900" : link.color || "#999";
+          const normalized = normalizeLink(link as unknown as ForceGraphLink);
+          const linkId = `${normalized.sourceId}-${normalized.targetId}`;
+          return highlightLinks.has(linkId)
+            ? "#ff9900"
+            : normalized.color || "#999";
         }}
         linkDirectionalParticles={(link) => {
-          const sourceId =
-            typeof link.source === "object" ? link.source.id : link.source;
-          const targetId =
-            typeof link.target === "object" ? link.target.id : link.target;
-          const linkId = `${sourceId}-${targetId}`;
+          const normalized = normalizeLink(link as unknown as ForceGraphLink);
+          const linkId = `${normalized.sourceId}-${normalized.targetId}`;
           return highlightLinks.has(linkId) ? 5 : 0;
         }}
         linkDirectionalParticleWidth={3}

@@ -48,7 +48,7 @@ export type GraphLink = {
 };
 
 export type GraphData = {
-  nodes: GraphNode[];
+  nodes: (GraphNode & string)[];
   links: GraphLink[];
 };
 
