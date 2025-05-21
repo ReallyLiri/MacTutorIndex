@@ -1,12 +1,12 @@
-import {useMemo, useState} from 'react';
-import {useFirestore} from '@/hooks/useFirestore';
-import {useGraph} from '@/hooks/useGraph';
-import {Filters, GraphLink, GraphNode, Mathematician} from '@/types';
-import Graph from '@/components/graph/Graph';
-import FilterPanel from '@/components/filters/FilterPanel';
-import IdentityCard from '@/components/details/IdentityCard';
-import ConnectionDetails from '@/components/details/ConnectionDetails';
-import {Loader2} from 'lucide-react';
+import { useMemo, useState } from "react";
+import { useFirestore } from "@/hooks/useFirestore";
+import { useGraph } from "@/hooks/useGraph";
+import { Filters, GraphLink, GraphNode, Mathematician } from "@/types";
+import Graph from "@/components/graph/Graph";
+import FilterPanel from "@/components/filters/FilterPanel";
+import IdentityCard from "@/components/details/IdentityCard";
+import ConnectionDetails from "@/components/details/ConnectionDetails";
+import { Loader2 } from "lucide-react";
 
 const DEFAULT_YEAR_RANGE: [number, number] = [1750, 1800];
 
@@ -16,74 +16,68 @@ const Home = () => {
     locations: [],
     religions: [],
     institutions: [],
-    mathematicians: []
+    mathematicians: [],
   });
-  
+
   const { mathematicians, loading, error } = useFirestore(filters);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [selectedLink, setSelectedLink] = useState<GraphLink | null>(null);
-  
+
   const mathematiciansMap = useMemo(() => {
     const map: Record<string, Mathematician> = {};
-    mathematicians.forEach(mathematician => {
+    mathematicians.forEach((mathematician) => {
       map[mathematician.id] = mathematician;
     });
     return map;
   }, [mathematicians]);
-  
-  const [allLocations, allReligions, allInstitutions, allMathematicians, yearRange] = useMemo(() => {
-    const locations = new Set<string>();
-    const religions = new Set<string>();
-    const institutions = new Set<string>();
-    const mathematicianNames: string[] = [];
-    let minYear = 940;
-    let maxYear = new Date().getFullYear();
-    
-    mathematicians.forEach(mathematician => {
-      mathematician.lived_in?.forEach(place => locations.add(place));
-      mathematician.worked_in?.forEach(place => locations.add(place));
-      if (mathematician.born?.place) locations.add(mathematician.born.place);
-      if (mathematician.died?.place) locations.add(mathematician.died.place);
-      
-      mathematician.religions?.forEach(religion => religions.add(religion));
-      
-      mathematician.institution_affiliation?.forEach(institution => 
-        institutions.add(institution)
-      );
-      
-      mathematicianNames.push(mathematician.name);
-      
-      if (mathematician.died?.year !== null && (mathematician.died?.year || 0) > maxYear) {
-        maxYear = mathematician.died?.year || new Date().getFullYear();
-      }
-    });
-    
-    return [
-      Array.from(locations).sort(),
-      Array.from(religions).sort(),
-      Array.from(institutions).sort(),
-      mathematicianNames.sort(),
-      [minYear, maxYear] as [number, number]
-    ];
-  }, [mathematicians]);
-  
+
+  const [allLocations, allReligions, allInstitutions, allMathematicians] =
+    useMemo(() => {
+      const locations = new Set<string>();
+      const religions = new Set<string>();
+      const institutions = new Set<string>();
+      const mathematicianNames: string[] = [];
+
+      mathematicians.forEach((mathematician) => {
+        mathematician.lived_in?.forEach((place) => locations.add(place));
+        mathematician.worked_in?.forEach((place) => locations.add(place));
+        if (mathematician.born?.place) locations.add(mathematician.born.place);
+        if (mathematician.died?.place) locations.add(mathematician.died.place);
+
+        mathematician.religions?.forEach((religion) => religions.add(religion));
+
+        mathematician.institution_affiliation?.forEach((institution) =>
+          institutions.add(institution),
+        );
+
+        mathematicianNames.push(mathematician.name);
+      });
+
+      return [
+        Array.from(locations).sort(),
+        Array.from(religions).sort(),
+        Array.from(institutions).sort(),
+        mathematicianNames.sort(),
+      ];
+    }, [mathematicians]);
+
   const graphData = useGraph(mathematicians, filters);
-  
+
   const handleNodeClick = (node: GraphNode) => {
     setSelectedNode(node);
     setSelectedLink(null);
   };
-  
+
   const handleLinkClick = (link: GraphLink) => {
     setSelectedLink(link);
     setSelectedNode(null);
   };
-  
+
   const handleCloseDetails = () => {
     setSelectedNode(null);
     setSelectedLink(null);
   };
-  
+
   if (error) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
@@ -94,20 +88,9 @@ const Home = () => {
       </div>
     );
   }
-  
-  if (loading) {
-    return (
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <h2 className="text-xl font-semibold">Loading mathematician data...</h2>
-        </div>
-      </div>
-    );
-  }
-  
+
   return (
-    <div className="flex h-[calc(100vh-4rem)]">
+    <div className="flex h-[calc(100vh-4rem)] w-screen">
       <FilterPanel
         filters={filters}
         onFiltersChange={setFilters}
@@ -115,33 +98,42 @@ const Home = () => {
         allLocations={allLocations}
         allReligions={allReligions}
         allInstitutions={allInstitutions}
-        minYear={yearRange[0]}
-        maxYear={yearRange[1]}
       />
-      
-      <div className="flex-1 relative">
-        <Graph 
-          data={graphData}
-          onNodeClick={handleNodeClick}
-          onLinkClick={handleLinkClick}
-        />
-        
-        <div className="absolute bottom-4 right-4 z-10 w-full max-w-md">
-          {selectedNode && (
-            <IdentityCard 
-              mathematician={selectedNode.data}
-              onClose={handleCloseDetails}
+
+      <div className="flex-1">
+        {loading ? (
+          <div className="inset-0 flex items-center justify-center h-full">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <h2 className="text-xl font-semibold">Loading data...</h2>
+            </div>
+          </div>
+        ) : (
+          <>
+            <Graph
+              data={graphData}
+              onNodeClick={handleNodeClick}
+              onLinkClick={handleLinkClick}
             />
-          )}
-          
-          {selectedLink && (
-            <ConnectionDetails 
-              link={selectedLink}
-              mathematicians={mathematiciansMap}
-              onClose={handleCloseDetails}
-            />
-          )}
-        </div>
+
+            <div className="absolute bottom-4 right-4 z-10 w-full max-w-md">
+              {selectedNode && (
+                <IdentityCard
+                  mathematician={selectedNode.data}
+                  onClose={handleCloseDetails}
+                />
+              )}
+
+              {selectedLink && (
+                <ConnectionDetails
+                  link={selectedLink}
+                  mathematicians={mathematiciansMap}
+                  onClose={handleCloseDetails}
+                />
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

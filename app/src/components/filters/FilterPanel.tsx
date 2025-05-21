@@ -1,14 +1,17 @@
-import { useState, useEffect } from 'react';
-import { Filters } from '@/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { ChevronLeft, ChevronRight, Filter } from 'lucide-react';
-import YearRangeFilter from './YearRangeFilter';
-import LocationFilter from './LocationFilter';
-import ReligionFilter from './ReligionFilter';
-import InstitutionFilter from './InstitutionFilter';
-import MathematicianFilter from './MathematicianFilter';
+import { useState, useEffect, useRef } from "react";
+import { Filters } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { ChevronLeft, ChevronRight, Filter } from "lucide-react";
+import YearRangeFilter from "./YearRangeFilter";
+import LocationFilter from "./LocationFilter";
+import ReligionFilter from "./ReligionFilter";
+import InstitutionFilter from "./InstitutionFilter";
+import MathematicianFilter from "./MathematicianFilter";
+import { Checkbox } from "@/components/ui/checkbox.tsx";
+
+const MIN_YEAR = -1680;
+const MAX_YEAR = new Date().getFullYear();
 
 interface FilterPanelProps {
   filters: Filters;
@@ -17,8 +20,6 @@ interface FilterPanelProps {
   allLocations: string[];
   allReligions: string[];
   allInstitutions: string[];
-  minYear: number;
-  maxYear: number;
 }
 
 const FilterPanel = ({
@@ -28,12 +29,12 @@ const FilterPanel = ({
   allLocations,
   allReligions,
   allInstitutions,
-  minYear,
-  maxYear
 }: FilterPanelProps) => {
+  const defaultFilters = useRef({ ...filters });
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [draftFilters, setDraftFilters] = useState<Filters>(filters);
-  
+  const [includeBC, setIncludeBC] = useState(false);
+
   useEffect(() => {
     setDraftFilters(filters);
   }, [filters]);
@@ -51,20 +52,15 @@ const FilterPanel = ({
   };
 
   const resetFilters = () => {
-    const resetValues = {
-      yearRange: [minYear, maxYear],
-      locations: [],
-      religions: [],
-      institutions: [],
-      mathematicians: []
-    };
-    
+    const resetValues = { ...defaultFilters.current };
     setDraftFilters(resetValues);
     onFiltersChange(resetValues);
   };
 
   return (
-    <div className={`transition-all duration-300 ${isCollapsed ? 'w-12' : 'w-80'} h-full flex flex-col bg-background border-r`}>
+    <div
+      className={`transition-all duration-300 ${isCollapsed ? "w-12" : "w-80"} h-full flex flex-col bg-background border-r`}
+    >
       {isCollapsed ? (
         <Button
           variant="ghost"
@@ -93,11 +89,13 @@ const FilterPanel = ({
           </div>
           <Separator />
           <div className="px-4 py-2 space-y-2">
-            <Button 
-              variant="default" 
-              onClick={applyFilters} 
+            <Button
+              variant="default"
+              onClick={applyFilters}
               className="w-full"
-              disabled={JSON.stringify(draftFilters) === JSON.stringify(filters)}
+              disabled={
+                JSON.stringify(draftFilters) === JSON.stringify(filters)
+              }
             >
               Apply Filters
             </Button>
@@ -106,72 +104,67 @@ const FilterPanel = ({
             </Button>
           </div>
           <Separator />
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            <Card>
-              <CardHeader className="p-3">
-                <CardTitle className="text-sm">Time Period</CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 pt-0">
-                <YearRangeFilter
-                  value={draftFilters.yearRange}
-                  min={minYear}
-                  max={maxYear}
-                  onChange={(yearRange) => updateDraftFilters({ ...draftFilters, yearRange })}
+          <div className="flex-1 overflow-y-auto p-4 space-y-6">
+            <div>
+              <div className="flex items-center justify-between cursor-pointer mb-2">
+                <span className="font-medium text-sm">Time Period</span>
+              </div>
+              <YearRangeFilter
+                value={draftFilters.yearRange}
+                min={includeBC ? MIN_YEAR : 0}
+                max={MAX_YEAR}
+                onChange={(yearRange) =>
+                  updateDraftFilters({ ...draftFilters, yearRange })
+                }
+              />
+              <div className="flex flex-row items-center gap-2 mt-2">
+                <Checkbox
+                  checked={includeBC}
+                  onCheckedChange={() => setIncludeBC((b) => !b)}
                 />
-              </CardContent>
-            </Card>
+                <label className="text-sm">Include BC</label>
+              </div>
+            </div>
             
-            <Card>
-              <CardHeader className="p-3">
-                <CardTitle className="text-sm">Locations</CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 pt-0">
-                <LocationFilter
-                  value={draftFilters.locations}
-                  options={allLocations}
-                  onChange={(locations) => updateDraftFilters({ ...draftFilters, locations })}
-                />
-              </CardContent>
-            </Card>
+            <Separator />
             
-            <Card>
-              <CardHeader className="p-3">
-                <CardTitle className="text-sm">Religions</CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 pt-0">
-                <ReligionFilter
-                  value={draftFilters.religions}
-                  options={allReligions}
-                  onChange={(religions) => updateDraftFilters({ ...draftFilters, religions })}
-                />
-              </CardContent>
-            </Card>
+            <LocationFilter
+              value={draftFilters.locations}
+              options={allLocations}
+              onChange={(locations) =>
+                updateDraftFilters({ ...draftFilters, locations })
+              }
+            />
             
-            <Card>
-              <CardHeader className="p-3">
-                <CardTitle className="text-sm">Institutions</CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 pt-0">
-                <InstitutionFilter
-                  value={draftFilters.institutions}
-                  options={allInstitutions}
-                  onChange={(institutions) => updateDraftFilters({ ...draftFilters, institutions })}
-                />
-              </CardContent>
-            </Card>
+            <Separator />
             
-            <Card>
-              <CardHeader className="p-3">
-                <CardTitle className="text-sm">Mathematicians</CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 pt-0">
-                <MathematicianFilter
-                  value={draftFilters.mathematicians}
-                  options={allMathematicians}
-                  onChange={(mathematicians) => updateDraftFilters({ ...draftFilters, mathematicians })}
-                />
-              </CardContent>
-            </Card>
+            <ReligionFilter
+              value={draftFilters.religions}
+              options={allReligions}
+              onChange={(religions) =>
+                updateDraftFilters({ ...draftFilters, religions })
+              }
+            />
+            
+            <Separator />
+            
+            <InstitutionFilter
+              value={draftFilters.institutions}
+              options={allInstitutions}
+              onChange={(institutions) =>
+                updateDraftFilters({ ...draftFilters, institutions })
+              }
+            />
+            
+            <Separator />
+            
+            <MathematicianFilter
+              value={draftFilters.mathematicians}
+              options={allMathematicians}
+              onChange={(mathematicians) =>
+                updateDraftFilters({ ...draftFilters, mathematicians })
+              }
+            />
           </div>
         </div>
       )}
