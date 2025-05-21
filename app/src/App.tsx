@@ -1,9 +1,13 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from './components/ui/theme-provider';
-import { Toaster } from './components/ui/toaster';
-import Header from './components/Header';
-import Home from './pages/Home';
-import About from './pages/About';
+import {
+  BrowserRouter as Router,
+  Navigate,
+  Route,
+  Routes,
+} from "react-router-dom";
+import { ThemeProvider } from "./components/ui/theme-provider";
+import { Toaster } from "./components/ui/toaster";
+import Header from "./components/Header";
+import Home from "./pages/Home";
 
 function App() {
   return (
@@ -14,7 +18,7 @@ function App() {
           <main className="flex-1">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
         </div>

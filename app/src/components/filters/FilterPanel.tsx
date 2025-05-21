@@ -59,18 +59,18 @@ const FilterPanel = ({
 
   return (
     <div
-      className={`transition-all duration-300 ${isCollapsed ? "w-12" : "w-80"} h-full flex flex-col bg-background border-r`}
+      className={`transition-all duration-300 ${isCollapsed ? "w-20" : "w-80"} h-full flex flex-col bg-background border-r`}
     >
       {isCollapsed ? (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleCollapse}
-          className="w-12 h-12 flex items-center justify-center"
-        >
-          <Filter className="w-4 h-4" />
-          <ChevronRight className="w-4 h-4 ml-1" />
-        </Button>
+        <div className="p-4">
+          <Button
+            variant="ghost"
+            onClick={toggleCollapse}
+            className="w-12 h-12 flex flex-col items-center justify-center"
+          >
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </Button>
+        </div>
       ) : (
         <div className="flex flex-col h-full overflow-hidden">
           <div className="flex items-center justify-between p-4">
@@ -80,9 +80,8 @@ const FilterPanel = ({
             </div>
             <Button
               variant="ghost"
-              size="icon"
               onClick={toggleCollapse}
-              className="w-8 h-8"
+              className="w-12 h-12 flex flex-col items-center justify-center"
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
@@ -125,9 +124,9 @@ const FilterPanel = ({
                 <label className="text-sm">Include BC</label>
               </div>
             </div>
-            
+
             <Separator />
-            
+
             <LocationFilter
               value={draftFilters.locations}
               options={allLocations}
@@ -135,9 +134,9 @@ const FilterPanel = ({
                 updateDraftFilters({ ...draftFilters, locations })
               }
             />
-            
+
             <Separator />
-            
+
             <ReligionFilter
               value={draftFilters.religions}
               options={allReligions}
@@ -145,9 +144,9 @@ const FilterPanel = ({
                 updateDraftFilters({ ...draftFilters, religions })
               }
             />
-            
+
             <Separator />
-            
+
             <InstitutionFilter
               value={draftFilters.institutions}
               options={allInstitutions}
@@ -155,9 +154,9 @@ const FilterPanel = ({
                 updateDraftFilters({ ...draftFilters, institutions })
               }
             />
-            
+
             <Separator />
-            
+
             <MathematicianFilter
               value={draftFilters.mathematicians}
               options={allMathematicians}
