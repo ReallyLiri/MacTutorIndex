@@ -16,8 +16,8 @@ export type Mathematician = {
   };
   picture?: string;
   connections: {
-    person: string; // ID or name of the other mathematician
-    connection_type: string; // e.g. "influenced by", "collaborator with"
+    person: string;
+    connection_type: string;
   }[];
   lived_in: string[];
   worked_in: string[];

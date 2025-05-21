@@ -11,7 +11,6 @@ import {Loader2} from 'lucide-react';
 const DEFAULT_YEAR_RANGE: [number, number] = [1750, 1800];
 
 const Home = () => {
-  // Initialize filters with default year range
   const [filters, setFilters] = useState<Filters>({
     yearRange: DEFAULT_YEAR_RANGE,
     locations: [],
@@ -20,12 +19,10 @@ const Home = () => {
     mathematicians: []
   });
   
-  // Use firestore hook with filters
   const { mathematicians, loading, error } = useFirestore(filters);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [selectedLink, setSelectedLink] = useState<GraphLink | null>(null);
   
-  // Create a map of mathematicians by id for easy lookup
   const mathematiciansMap = useMemo(() => {
     const map: Record<string, Mathematician> = {};
     mathematicians.forEach(mathematician => {
@@ -34,34 +31,28 @@ const Home = () => {
     return map;
   }, [mathematicians]);
   
-  // Extract all unique values for filters from the current dataset
   const [allLocations, allReligions, allInstitutions, allMathematicians, yearRange] = useMemo(() => {
     const locations = new Set<string>();
     const religions = new Set<string>();
     const institutions = new Set<string>();
     const mathematicianNames: string[] = [];
-    let minYear = 940; // Absolute minimum year in the database
-    let maxYear = new Date().getFullYear(); // Absolute maximum year
+    let minYear = 940;
+    let maxYear = new Date().getFullYear();
     
     mathematicians.forEach(mathematician => {
-      // Locations
       mathematician.lived_in?.forEach(place => locations.add(place));
       mathematician.worked_in?.forEach(place => locations.add(place));
       if (mathematician.born?.place) locations.add(mathematician.born.place);
       if (mathematician.died?.place) locations.add(mathematician.died.place);
       
-      // Religions
       mathematician.religions?.forEach(religion => religions.add(religion));
       
-      // Institutions
       mathematician.institution_affiliation?.forEach(institution => 
         institutions.add(institution)
       );
       
-      // Mathematician names
       mathematicianNames.push(mathematician.name);
       
-      // Years - we no longer need to calculate this from data as we're using fixed range
       if (mathematician.died?.year !== null && (mathematician.died?.year || 0) > maxYear) {
         maxYear = mathematician.died?.year || new Date().getFullYear();
       }
@@ -76,22 +67,18 @@ const Home = () => {
     ];
   }, [mathematicians]);
   
-  // Generate graph data from filtered results
   const graphData = useGraph(mathematicians, filters);
   
-  // Handle node click
   const handleNodeClick = (node: GraphNode) => {
     setSelectedNode(node);
     setSelectedLink(null);
   };
   
-  // Handle link click
   const handleLinkClick = (link: GraphLink) => {
     setSelectedLink(link);
     setSelectedNode(null);
   };
   
-  // Close details panels
   const handleCloseDetails = () => {
     setSelectedNode(null);
     setSelectedLink(null);

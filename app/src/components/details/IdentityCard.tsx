@@ -40,7 +40,6 @@ const IdentityCard = ({ mathematician, onClose }: IdentityCardProps) => {
     return place;
   };
 
-  // Get initials for avatar fallback
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };

@@ -27,7 +27,6 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
       setHoverNode(node);
       highlightNodes.add(node.id);
       
-      // Get all connected links and nodes
       if (data.links) {
         data.links.forEach(link => {
           const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
@@ -48,7 +47,6 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
   }, [data.links]);
 
   const handleNodeClick = useCallback((node: GraphNode) => {
-    // Center the graph on the clicked node
     if (graphRef.current) {
       graphRef.current.centerAt(node.x, node.y, 1000);
       graphRef.current.zoom(2.5, 1000);
@@ -92,20 +90,17 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
           const fontSize = val * 1.2;
           const isHighlighted = highlightNodes.has(node.id as string);
           
-          // Draw node circle
           ctx.beginPath();
           ctx.arc(x!, y!, val! * (isHighlighted ? 1.4 : 1), 0, 2 * Math.PI);
           ctx.fillStyle = color || '#3B82F6';
           ctx.fill();
           
-          // Draw border for highlighted nodes
           if (isHighlighted) {
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
           
-          // Draw node label if zoomed in or highlighted
           if (globalScale > 1 || isHighlighted) {
             ctx.font = `${isHighlighted ? 'bold ' : ''}${fontSize}px Sans-Serif`;
             ctx.textAlign = 'center';

@@ -20,26 +20,21 @@ const ConnectionDetails = ({ link, mathematicians, onClose }: ConnectionDetailsP
   
   if (!sourceMathematician || !targetMathematician) return null;
 
-  // Function to create a citation URL to MacTutor biographies
   const createCitationUrl = (name: string, text: string) => {
     const baseUrl = 'https://mathshistory.st-andrews.ac.uk/Biographies/';
     const formattedName = name.split(' ').pop();
     return `${baseUrl}${formattedName}/#:~:text=${encodeURIComponent(text)}`;
   };
 
-  // Get excerpts from the summary that mention the connection
   const getConnectionExcerpts = () => {
     const sourceExcerpts: string[] = [];
     const targetExcerpts: string[] = [];
     
-    // Split summaries into sentences and find mentions
     const sourceSummary = sourceMathematician.summary || '';
     const targetSummary = targetMathematician.summary || '';
     
     const sourceSentences = sourceSummary.match(/[^.!?]+[.!?]+/g) || [];
     const targetSentences = targetSummary.match(/[^.!?]+[.!?]+/g) || [];
-    
-    // Search for mentions of the other mathematician in each sentence
     sourceSentences.forEach(sentence => {
       if (sentence.includes(targetMathematician.name)) {
         sourceExcerpts.push(sentence.trim());

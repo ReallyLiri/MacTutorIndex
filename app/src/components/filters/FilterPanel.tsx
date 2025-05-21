@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Filters } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,19 +32,35 @@ const FilterPanel = ({
   maxYear
 }: FilterPanelProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [draftFilters, setDraftFilters] = useState<Filters>(filters);
+  
+  useEffect(() => {
+    setDraftFilters(filters);
+  }, [filters]);
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
 
+  const updateDraftFilters = (newDraftFilters: Filters) => {
+    setDraftFilters(newDraftFilters);
+  };
+
+  const applyFilters = () => {
+    onFiltersChange(draftFilters);
+  };
+
   const resetFilters = () => {
-    onFiltersChange({
+    const resetValues = {
       yearRange: [minYear, maxYear],
       locations: [],
       religions: [],
       institutions: [],
       mathematicians: []
-    });
+    };
+    
+    setDraftFilters(resetValues);
+    onFiltersChange(resetValues);
   };
 
   return (
@@ -76,6 +92,20 @@ const FilterPanel = ({
             </Button>
           </div>
           <Separator />
+          <div className="px-4 py-2 space-y-2">
+            <Button 
+              variant="default" 
+              onClick={applyFilters} 
+              className="w-full"
+              disabled={JSON.stringify(draftFilters) === JSON.stringify(filters)}
+            >
+              Apply Filters
+            </Button>
+            <Button variant="outline" onClick={resetFilters} className="w-full">
+              Reset Filters
+            </Button>
+          </div>
+          <Separator />
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             <Card>
               <CardHeader className="p-3">
@@ -83,10 +113,10 @@ const FilterPanel = ({
               </CardHeader>
               <CardContent className="p-3 pt-0">
                 <YearRangeFilter
-                  value={filters.yearRange}
+                  value={draftFilters.yearRange}
                   min={minYear}
                   max={maxYear}
-                  onChange={(yearRange) => onFiltersChange({ ...filters, yearRange })}
+                  onChange={(yearRange) => updateDraftFilters({ ...draftFilters, yearRange })}
                 />
               </CardContent>
             </Card>
@@ -97,9 +127,9 @@ const FilterPanel = ({
               </CardHeader>
               <CardContent className="p-3 pt-0">
                 <LocationFilter
-                  value={filters.locations}
+                  value={draftFilters.locations}
                   options={allLocations}
-                  onChange={(locations) => onFiltersChange({ ...filters, locations })}
+                  onChange={(locations) => updateDraftFilters({ ...draftFilters, locations })}
                 />
               </CardContent>
             </Card>
@@ -110,9 +140,9 @@ const FilterPanel = ({
               </CardHeader>
               <CardContent className="p-3 pt-0">
                 <ReligionFilter
-                  value={filters.religions}
+                  value={draftFilters.religions}
                   options={allReligions}
-                  onChange={(religions) => onFiltersChange({ ...filters, religions })}
+                  onChange={(religions) => updateDraftFilters({ ...draftFilters, religions })}
                 />
               </CardContent>
             </Card>
@@ -123,9 +153,9 @@ const FilterPanel = ({
               </CardHeader>
               <CardContent className="p-3 pt-0">
                 <InstitutionFilter
-                  value={filters.institutions}
+                  value={draftFilters.institutions}
                   options={allInstitutions}
-                  onChange={(institutions) => onFiltersChange({ ...filters, institutions })}
+                  onChange={(institutions) => updateDraftFilters({ ...draftFilters, institutions })}
                 />
               </CardContent>
             </Card>
@@ -136,17 +166,12 @@ const FilterPanel = ({
               </CardHeader>
               <CardContent className="p-3 pt-0">
                 <MathematicianFilter
-                  value={filters.mathematicians}
+                  value={draftFilters.mathematicians}
                   options={allMathematicians}
-                  onChange={(mathematicians) => onFiltersChange({ ...filters, mathematicians })}
+                  onChange={(mathematicians) => updateDraftFilters({ ...draftFilters, mathematicians })}
                 />
               </CardContent>
             </Card>
-          </div>
-          <div className="p-4 border-t">
-            <Button variant="outline" onClick={resetFilters} className="w-full">
-              Reset Filters
-            </Button>
           </div>
         </div>
       )}
