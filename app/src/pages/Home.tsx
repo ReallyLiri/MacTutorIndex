@@ -7,7 +7,7 @@ import FilterPanel from "@/components/filters/FilterPanel";
 import IdentityCard from "@/components/details/IdentityCard";
 import ConnectionDetails from "@/components/details/ConnectionDetails";
 import { Loader2 } from "lucide-react";
-import { buildLocationTree, LocationNode } from "@/lib/locationUtils";
+import { buildLocationTree } from "@/lib/locationUtils";
 
 const DEFAULT_YEAR_RANGE: [number, number] = [1750, 1800];
 const FILTERS_STORAGE_KEY = "math-historian-filters";

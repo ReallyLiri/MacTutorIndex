@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   ChevronDown,
-  ChevronLeft,
   ChevronRight,
   ChevronUp,
 } from "lucide-react";

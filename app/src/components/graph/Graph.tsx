@@ -1,17 +1,21 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import ForceGraph2D, {
-  ForceGraphMethods,
-  LinkObject,
-  NodeObject,
-} from "react-force-graph-2d";
+import ForceGraph2D from "react-force-graph-2d";
+import { LinkObject } from "react-force-graph-2d";
 import { GraphData, GraphNode, GraphLink, GraphNodeWithCoords } from "@/types";
+import { NodeObject as ForceGraphNodeObject } from "react-force-graph-2d";
+
+// Define a more flexible type for the ForceGraph ref
+type ForceGraphRef = {
+  centerAt: (x: number, y: number, ms?: number) => void;
+  zoom: (zoom: number, ms?: number) => void;
+};
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { renderNode } from "@/lib/graphUtils";
 import { SearchBar } from "./SearchBar";
 
-type NodeReference = string | NodeObject<GraphNode>;
-type ForceGraphLink = LinkObject<NodeObject<GraphNode>, GraphLink>;
+type NodeReference = string | ForceGraphNodeObject<GraphNode>;
+type ForceGraphLink = LinkObject<ForceGraphNodeObject<GraphNode>, GraphLink>;
 
 interface NormalizedLink {
   sourceId: string;
@@ -43,21 +47,19 @@ const Graph = ({
   selectedNodeId,
   selectedLink,
 }: GraphProps) => {
-  const focusOnPosition = useCallback((x: number, y: number) => {
-    if (graphRef.current) {
-      const windowWidth = window.innerWidth;
-      const xOffset = windowWidth * 0.1;
-      graphRef.current.centerAt(x + xOffset, y, MOVE_DURATION_MS);
-      graphRef.current.zoom(2.5, MOVE_DURATION_MS);
-    }
-  }, []);
-  const graphRef =
-    useRef<
-      ForceGraphMethods<
-        NodeObject<GraphNode & string>,
-        LinkObject<GraphNode & string, GraphLink>
-      >
-    >(undefined);
+  const focusOnPosition = useCallback(
+    (x: number | undefined, y: number | undefined) => {
+      if (x === undefined || y === undefined) return;
+      if (graphRef.current) {
+        const windowWidth = window.innerWidth;
+        const xOffset = windowWidth * 0.1;
+        graphRef.current.centerAt(x + xOffset, y, MOVE_DURATION_MS);
+        graphRef.current.zoom(2.5, MOVE_DURATION_MS);
+      }
+    },
+    [],
+  );
+  const graphRef = useRef<ForceGraphRef | null>(null);
   const [highlightNodes, setHighlightNodes] = useState(new Set<string>());
   const [highlightLinks, setHighlightLinks] = useState(new Set<string>());
   const [hoverNode, setHoverNode] = useState<GraphNodeWithCoords | null>(null);
@@ -110,7 +112,7 @@ const Graph = ({
   );
 
   const handleNodeHover = useCallback(
-    (node: NodeObject<GraphNode> | null) => {
+    (node: ForceGraphNodeObject<GraphNode> | null) => {
       const nodes = new Set<string>();
       const links = new Set<string>();
 
@@ -143,9 +145,11 @@ const Graph = ({
   );
 
   const handleNodeClick = useCallback(
-    (node: NodeObject<GraphNode>) => {
-      focusOnPosition(node.x, node.y);
-      onNodeClick(node);
+    (node: ForceGraphNodeObject<GraphNode>) => {
+      if (node.x !== undefined && node.y !== undefined) {
+        focusOnPosition(node.x, node.y);
+      }
+      onNodeClick(node as unknown as GraphNode);
     },
     [onNodeClick, focusOnPosition],
   );
@@ -216,12 +220,13 @@ const Graph = ({
     if (selectedNodeId && data.nodes) {
       const selectedNode = data.nodes.find(
         (node) => typeof node === "object" && node.id === selectedNodeId,
-      );
+      ) as ForceGraphNodeObject<GraphNode> | undefined;
+
       if (
         selectedNode &&
         typeof selectedNode === "object" &&
-        selectedNode.x &&
-        selectedNode.y
+        selectedNode.x !== undefined &&
+        selectedNode.y !== undefined
       ) {
         focusOnPosition(selectedNode.x, selectedNode.y);
       }
@@ -259,11 +264,11 @@ const Graph = ({
     (node: GraphNode) => {
       const graphNode = data.nodes.find(
         (n) => typeof n === "object" && n.id === node.id,
-      ) as NodeObject<GraphNode>;
+      ) as ForceGraphNodeObject<GraphNode> | undefined;
 
-      if (graphNode && graphNode.x && graphNode.y) {
+      if (graphNode && graphNode.x !== undefined && graphNode.y !== undefined) {
         focusOnPosition(graphNode.x, graphNode.y);
-        onNodeClick(node);
+        onNodeClick(node as unknown as GraphNode);
       }
     },
     [data.nodes, focusOnPosition, onNodeClick],
@@ -308,23 +313,25 @@ const Graph = ({
           </div>
         )}
         <ForceGraph2D
-          ref={graphRef}
-          graphData={{
-            nodes: [...data.nodes].sort((a, b) => {
-              const aIsSelected =
-                typeof a === "object" && a.id === selectedNodeId;
-              const bIsSelected =
-                typeof b === "object" && b.id === selectedNodeId;
+          ref={graphRef as any}
+          graphData={
+            {
+              nodes: [...data.nodes].sort((a, b) => {
+                const aIsSelected =
+                  typeof a === "object" && a.id === selectedNodeId;
+                const bIsSelected =
+                  typeof b === "object" && b.id === selectedNodeId;
 
-              if (aIsSelected !== bIsSelected) return aIsSelected ? 1 : -1;
+                if (aIsSelected !== bIsSelected) return aIsSelected ? 1 : -1;
 
-              if (typeof a === "object" && typeof b === "object") {
-                return a.name.localeCompare(b.name);
-              }
-              return 0;
-            }),
-            links: data.links,
-          }}
+                if (typeof a === "object" && typeof b === "object") {
+                  return a.name.localeCompare(b.name);
+                }
+                return 0;
+              }),
+              links: data.links,
+            } as any
+          }
           nodeLabel="name"
           nodeRelSize={6}
           nodeAutoColorBy="id"
@@ -373,7 +380,11 @@ const Graph = ({
           linkDirectionalParticleColor={() => "#ff9900"}
           onLinkHover={handleLinkHover}
           onLinkClick={handleLinkClick}
-          nodeCanvasObject={(node, ctx, globalScale) => {
+          nodeCanvasObject={(
+            node: ForceGraphNodeObject<GraphNode>,
+            ctx,
+            globalScale,
+          ) => {
             const isHighlighted =
               highlightNodes.has(node.id as string) ||
               node.id === selectedNodeId;
@@ -386,7 +397,7 @@ const Graph = ({
               globalScale,
               imgCache.current,
               isHighlighted,
-              isSelected,
+              !!isSelected,
               () => {
                 if (graphRef.current && !throttleRef.current) {
                   throttleRef.current = true;

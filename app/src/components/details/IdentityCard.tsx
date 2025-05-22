@@ -52,7 +52,7 @@ const ConnectionPerson = ({
 }: ConnectionPersonProps) => {
   const [personData, setPersonData] = useState<Mathematician | null>(null);
   const [loading, setLoading] = useState(true);
-  const { getMathematicianById } = useFirestore();
+  const { getMathematicianById } = useFirestore(null);
 
   useEffect(() => {
     const fetchPerson = async () => {

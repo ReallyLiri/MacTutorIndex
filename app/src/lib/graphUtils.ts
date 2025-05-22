@@ -1,4 +1,4 @@
-import { NodeObject } from "react-force-graph-2d";
+import { NodeObject as ForceGraphNodeObject } from "react-force-graph-2d";
 import { GraphNode } from "@/types";
 
 export const getInitials = (name: string) => {
@@ -11,7 +11,7 @@ export const getInitials = (name: string) => {
 };
 
 export const renderNode = (
-  node: NodeObject<GraphNode>,
+  node: ForceGraphNodeObject<GraphNode>,
   ctx: CanvasRenderingContext2D,
   globalScale: number,
   imgCache: Record<string, HTMLImageElement>,

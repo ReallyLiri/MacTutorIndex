@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Mathematician, GraphData, Filters } from "../types";
+import { Mathematician, GraphData } from "../types";
 
 export const useGraph = (mathematicians: Mathematician[]) => {
   return useMemo(() => {
@@ -42,7 +42,7 @@ export const useGraph = (mathematicians: Mathematician[]) => {
   }, [mathematicians]);
 };
 
-const getNodeColor = (mathematician: Mathematician): string => {
+const getNodeColor = (_mathematician: Mathematician): string => {
   return "#3B82F6";
 };
 

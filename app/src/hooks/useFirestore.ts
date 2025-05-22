@@ -14,7 +14,7 @@ const AVERAGE_LIFESPAN = 50;
 
 const COLLECTION_NAME = "l2";
 
-export const useFirestore = (filters: Filters) => {
+export const useFirestore = (filters: Filters | null) => {
   const [mathematicians, setMathematicians] = useState<Mathematician[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -36,6 +36,9 @@ export const useFirestore = (filters: Filters) => {
   }, []);
 
   useEffect(() => {
+    if (!filters) {
+      return;
+    }
     const fetchMathematicians = async () => {
       try {
         setLoading(true);
