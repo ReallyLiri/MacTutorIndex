@@ -104,7 +104,9 @@ const FilterPanel = ({
           <div className="flex-1 overflow-y-auto p-4 space-y-6 scroll-stable">
             <div>
               <div className="flex items-center justify-between cursor-pointer mb-2">
-                <span className="font-medium text-sm">Time Period</span>
+                <span className="font-medium text-sm text-blue-500">
+                  Time Period
+                </span>
               </div>
               <YearRangeFilter
                 value={draftFilters.yearRange}
@@ -120,7 +122,7 @@ const FilterPanel = ({
                   checked={includeBC}
                   onCheckedChange={() => setIncludeBC((b) => !b)}
                 />
-                <label className="text-sm">Include BC</label>
+                <label className="text-sm text-gray-500">Include BC</label>
               </div>
             </div>
 

@@ -2,18 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { GraphNode } from "@/types";
 import { Search } from "lucide-react";
+import { normalizeText } from "@/lib/textUtils";
 
 interface SearchBarProps {
   nodes: GraphNode[];
   onSelectNode: (node: GraphNode) => void;
 }
-
-const normalizeText = (text: string): string => {
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-};
 
 export function SearchBar({ nodes, onSelectNode }: SearchBarProps) {
   const [query, setQuery] = useState("");
@@ -68,7 +62,7 @@ export function SearchBar({ nodes, onSelectNode }: SearchBarProps) {
       <div className="relative">
         <Search className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search mathematicians..."
+          placeholder={`Search in ${nodes.length} mathematicians...`}
           className="pl-8 pr-4 h-10"
           value={query}
           onChange={(e) => {

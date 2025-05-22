@@ -2,8 +2,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { toTitleCase, normalizeText } from "@/lib/textUtils";
 
 interface MultiSelectFilterProps {
   className?: string;
@@ -29,10 +30,27 @@ const MultiSelectFilter = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const filteredOptions = options.filter(
-    (option) =>
-      option && option.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const dedupedFormattedOptions = useMemo(() => {
+    const normalizedMap = new Map<string, string>();
+
+    options.forEach((option) => {
+      if (!option) return;
+      const normalized = normalizeText(option);
+      const formatted = toTitleCase(option);
+
+      normalizedMap.set(normalized, formatted);
+    });
+
+    return Array.from(normalizedMap.values()).sort();
+  }, [options]);
+
+  const filteredOptions = useMemo(() => {
+    const normalizedQuery = normalizeText(searchQuery);
+
+    return dedupedFormattedOptions.filter((option) =>
+      normalizeText(option).includes(normalizedQuery),
+    );
+  }, [dedupedFormattedOptions, searchQuery]);
 
   const handleToggle = (option: string) => {
     if (value.includes(option)) {
@@ -70,7 +88,8 @@ const MultiSelectFilter = ({
               <ChevronDown className="h-4 w-4" />
             )}
           </Button>
-          <span className="font-medium text-sm">{title}</span>
+          <span className="font-medium text-sm text-blue-500">{title}</span>
+          <span className="text-sm text-gray-500">({options.length})</span>
         </div>
         <span className="text-xs text-muted-foreground">
           {selectedCount > 0 ? `${selectedCount} selected` : "All"}
@@ -85,6 +104,20 @@ const MultiSelectFilter = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          <div className="flex justify-start gap-3 mt-1 mb-1">
+            <button
+              className="text-xs  hover:underline"
+              onClick={() => onChange(filteredOptions)}
+            >
+              Select all
+            </button>
+            <button
+              className="text-xs hover:underline"
+              onClick={() => onChange([])}
+            >
+              Clear all
+            </button>
+          </div>
           <ScrollArea className="h-32">
             <div className="space-y-1 mt-1">
               {filteredOptions.map((option) => (
