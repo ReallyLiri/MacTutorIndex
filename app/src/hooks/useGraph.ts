@@ -52,10 +52,25 @@ const getLinkColor = (connectionType: string): string => {
       return "#9333EA";
     case "collaborator with":
       return "#14B8A6";
+    case "student of":
+    case "studied":
+      return "#22C55E";
     case "teacher of":
       return "#F97316";
-    case "student of":
-      return "#22C55E";
+    case "mentor":
+    case "mentor of":
+    case "advisor to":
+    case "supervisor of":
+      return "#EAB308";
+    case "colleague of":
+    case "colleague":
+    case "contemporary of":
+      return "#3B82F6";
+    case "friend of":
+      return "#EC4899";
+    case "correspondent with":
+      return "#8B5CF6";
+    case "other":
     default:
       return "#94A3B8";
   }
