@@ -63,7 +63,7 @@ const FilterPanel = ({
   };
 
   return (
-    <div className={`h-full flex flex-col bg-background border-r`}>
+    <div className="h-full flex flex-col bg-background border-r">
       {isCollapsed ? (
         <div className="p-4">
           <Button
@@ -75,7 +75,7 @@ const FilterPanel = ({
           </Button>
         </div>
       ) : (
-        <div className="flex flex-col h-full overflow-hidden">
+        <div className="flex flex-col h-full w-[32rem]">
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-2">
               <Filter className="w-5 h-5" />
@@ -106,7 +106,7 @@ const FilterPanel = ({
             </Button>
           </div>
           <Separator />
-          <div className="flex-1 overflow-y-auto p-4 space-y-6 scroll-stable">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-6 scroll-stable">
             <div>
               <div className="flex items-center justify-between cursor-pointer mb-2">
                 <span className="font-medium text-sm text-blue-500">

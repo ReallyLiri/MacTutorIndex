@@ -57,7 +57,7 @@ export function SearchBar({ nodes, onSelectNode }: SearchBarProps) {
   return (
     <div
       ref={containerRef}
-      className="absolute top-[5rem] left-[18rem] z-10 w-80 shadow-lg"
+      className="absolute top-[5rem] right-[9rem] z-10 w-80 shadow-lg"
     >
       <div className="relative">
         <Search className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
