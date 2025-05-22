@@ -45,6 +45,7 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
   const [hoverNode, setHoverNode] = useState<GraphNodeWithCoords | null>(null);
   const [hoverLink, setHoverLink] = useState<NormalizedLink | null>(null);
   const imgCache = useRef<Record<string, HTMLImageElement>>({});
+  const throttleRef = useRef(false);
 
   const normalizeNodeReference = useCallback(
     (
@@ -197,6 +198,34 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
     }
   }, [selectedNodeId, data.nodes]);
   
+  useEffect(() => {
+    const preloadImages = () => {
+      if (data.nodes) {
+        data.nodes.forEach(node => {
+          if (typeof node === 'object' && node.data?.picture) {
+            const pictureUrl = node.data.picture;
+            if (!imgCache.current[pictureUrl]) {
+              const img = new Image();
+              img.onload = () => {
+                if (graphRef.current && !throttleRef.current) {
+                  throttleRef.current = true;
+                  setTimeout(() => {
+                    graphRef.current?.refresh();
+                    throttleRef.current = false;
+                  }, 300);
+                }
+              };
+              img.src = pictureUrl;
+              imgCache.current[pictureUrl] = img;
+            }
+          }
+        });
+      }
+    };
+    
+    preloadImages();
+  }, [data.nodes]);
+  
 
   return (
     <>
@@ -283,7 +312,15 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
               imgCache.current,
               isHighlighted,
               isSelected,
-              () => { if (graphRef.current) graphRef.current.refresh(); }
+              () => {
+                if (graphRef.current && !throttleRef.current) {
+                  throttleRef.current = true;
+                  setTimeout(() => {
+                    graphRef.current?.refresh();
+                    throttleRef.current = false;
+                  }, 300);
+                }
+              }
             );
           }}
           onNodeHover={handleNodeHover}

@@ -36,13 +36,13 @@ export const renderNode = (
     ctx.arc(x!, y!, nodeRadius - 1, 0, 2 * Math.PI);
     ctx.clip();
     
-    const img = new Image();
-    img.src = data.picture;
+    drawInitials();
     
-    try {
-      if (img.complete && img.naturalHeight !== 0) {
-        const imgWidth = img.naturalWidth || nodeRadius * 2;
-        const imgHeight = img.naturalHeight || nodeRadius * 2;
+    const cachedImg = imgCache[data.picture];
+    if (cachedImg && cachedImg.complete && cachedImg.naturalHeight !== 0) {
+      try {
+        const imgWidth = cachedImg.naturalWidth || nodeRadius * 2;
+        const imgHeight = cachedImg.naturalHeight || nodeRadius * 2;
         const scale = Math.max(
           (nodeRadius * 2) / imgWidth,
           (nodeRadius * 2) / imgHeight
@@ -54,13 +54,13 @@ export const renderNode = (
         const imgX = x! - scaledWidth / 2;
         const imgY = y! - scaledHeight / 2;
         
-        ctx.drawImage(img, imgX, imgY, scaledWidth, scaledHeight);
-      } else {
-        drawInitials();
-        img.onload = graphRefreshCallback;
-      }
-    } catch (e) {
-      drawInitials();
+        ctx.drawImage(cachedImg, imgX, imgY, scaledWidth, scaledHeight);
+      } catch (e) {}
+    } else if (!cachedImg) {
+      const img = new Image();
+      img.onload = graphRefreshCallback;
+      img.src = data.picture;
+      imgCache[data.picture] = img;
     }
     
     ctx.restore();
@@ -74,8 +74,8 @@ export const renderNode = (
     ctx.stroke();
   }
   
-  if (globalScale > 1 || isHighlighted) {
-    ctx.font = `${isHighlighted ? "bold " : ""}${fontSize}px Sans-Serif`;
+  if (isHighlighted) {
+    ctx.font = `bold ${fontSize}px Sans-Serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "#fff";
