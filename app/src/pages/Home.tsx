@@ -16,7 +16,8 @@ const Home = () => {
     locations: [],
     religions: [],
     institutions: [],
-    mathematicians: [],
+    worked_in: [],
+    profession: [],
   });
 
   const { mathematicians, loading, error } = useFirestore(filters);
@@ -31,35 +32,42 @@ const Home = () => {
     return map;
   }, [mathematicians]);
 
-  const [allLocations, allReligions, allInstitutions, allMathematicians] =
-    useMemo(() => {
-      const locations = new Set<string>();
-      const religions = new Set<string>();
-      const institutions = new Set<string>();
-      const mathematicianNames: string[] = [];
+  const [
+    allLocations,
+    allReligions,
+    allInstitutions,
+    allWorkedIn,
+    allProfessions,
+  ] = useMemo(() => {
+    const locations = new Set<string>();
+    const religions = new Set<string>();
+    const institutions = new Set<string>();
+    const workedIn = new Set<string>();
+    const professions = new Set<string>();
 
-      mathematicians.forEach((mathematician) => {
-        mathematician.lived_in?.forEach((place) => locations.add(place));
-        mathematician.worked_in?.forEach((place) => locations.add(place));
-        if (mathematician.born?.place) locations.add(mathematician.born.place);
-        if (mathematician.died?.place) locations.add(mathematician.died.place);
+    mathematicians.forEach((mathematician) => {
+      mathematician.lived_in?.forEach((place) => locations.add(place));
+      mathematician.worked_in?.forEach((place) => workedIn.add(place));
+      if (mathematician.born?.place) locations.add(mathematician.born.place);
+      if (mathematician.died?.place) locations.add(mathematician.died.place);
 
-        mathematician.religions?.forEach((religion) => religions.add(religion));
+      mathematician.religions?.forEach((religion) => religions.add(religion));
 
-        mathematician.institution_affiliation?.forEach((institution) =>
-          institutions.add(institution),
-        );
+      mathematician.institution_affiliation?.forEach((institution) =>
+        institutions.add(institution),
+      );
 
-        mathematicianNames.push(mathematician.name);
-      });
+      mathematician.profession?.forEach((prof) => professions.add(prof));
+    });
 
-      return [
-        Array.from(locations).sort(),
-        Array.from(religions).sort(),
-        Array.from(institutions).sort(),
-        mathematicianNames.sort(),
-      ];
-    }, [mathematicians]);
+    return [
+      Array.from(locations).sort(),
+      Array.from(religions).sort(),
+      Array.from(institutions).sort(),
+      Array.from(workedIn).sort(),
+      Array.from(professions).sort(),
+    ];
+  }, [mathematicians]);
 
   const graphData = useGraph(mathematicians, filters);
 
@@ -86,7 +94,7 @@ const Home = () => {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+      <div className="flex items-center justify-center h-[calc(100vh-4rem)] w-screen">
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">Error loading data</h2>
           <p className="text-muted-foreground">{error.message}</p>
@@ -100,10 +108,11 @@ const Home = () => {
       <FilterPanel
         filters={filters}
         onFiltersChange={setFilters}
-        allMathematicians={allMathematicians}
         allLocations={allLocations}
         allReligions={allReligions}
         allInstitutions={allInstitutions}
+        allWorkedIn={allWorkedIn}
+        allProfessions={allProfessions}
       />
 
       <div className="flex-1">

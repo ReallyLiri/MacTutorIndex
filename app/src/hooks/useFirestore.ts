@@ -61,9 +61,19 @@ export const useFirestore = (filters?: Filters) => {
             );
           }
 
-          if (filters.mathematicians.length > 0) {
+          if (filters.worked_in.length > 0) {
             mathematiciansData = mathematiciansData.filter((mathematician) =>
-              filters.mathematicians.includes(mathematician.id),
+              mathematician.worked_in?.some((place) =>
+                filters.worked_in.includes(place)
+              )
+            );
+          }
+          
+          if (filters.profession.length > 0) {
+            mathematiciansData = mathematiciansData.filter((mathematician) =>
+              mathematician.profession?.some((prof) =>
+                filters.profession.includes(prof)
+              )
             );
           }
         }

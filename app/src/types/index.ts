@@ -63,5 +63,6 @@ export type Filters = {
   locations: string[];
   religions: string[];
   institutions: string[];
-  mathematicians: string[];
+  worked_in: string[];
+  profession: string[];
 };

@@ -7,7 +7,8 @@ import YearRangeFilter from "./YearRangeFilter";
 import LocationFilter from "./LocationFilter";
 import ReligionFilter from "./ReligionFilter";
 import InstitutionFilter from "./InstitutionFilter";
-import MathematicianFilter from "./MathematicianFilter";
+import WorkedInFilter from "./WorkedInFilter";
+import ProfessionFilter from "./ProfessionFilter";
 import { Checkbox } from "@/components/ui/checkbox.tsx";
 
 const MIN_YEAR = -1680;
@@ -16,19 +17,21 @@ const MAX_YEAR = new Date().getFullYear();
 interface FilterPanelProps {
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
-  allMathematicians: string[];
   allLocations: string[];
   allReligions: string[];
   allInstitutions: string[];
+  allWorkedIn: string[];
+  allProfessions: string[];
 }
 
 const FilterPanel = ({
   filters,
   onFiltersChange,
-  allMathematicians,
   allLocations,
   allReligions,
   allInstitutions,
+  allWorkedIn,
+  allProfessions,
 }: FilterPanelProps) => {
   const defaultFilters = useRef({ ...filters });
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -158,11 +161,21 @@ const FilterPanel = ({
 
             <Separator />
 
-            <MathematicianFilter
-              value={draftFilters.mathematicians}
-              options={allMathematicians}
-              onChange={(mathematicians) =>
-                updateDraftFilters({ ...draftFilters, mathematicians })
+            <WorkedInFilter
+              value={draftFilters.worked_in}
+              options={allWorkedIn}
+              onChange={(worked_in) =>
+                updateDraftFilters({ ...draftFilters, worked_in })
+              }
+            />
+
+            <Separator />
+
+            <ProfessionFilter
+              value={draftFilters.profession}
+              options={allProfessions}
+              onChange={(profession) =>
+                updateDraftFilters({ ...draftFilters, profession })
               }
             />
           </div>
