@@ -59,29 +59,30 @@ const IdentityCard = ({ mathematician, onClose }: IdentityCardProps) => {
   };
 
   return (
-    <Card className="w-full max-w-md h-full flex flex-col">
-      <ScrollArea className="flex-1">
-        <CardContent className="p-4">
-          <div className="flex items-center mb-4">
-            <Avatar className="h-16 w-16 mr-4">
-              <AvatarImage src={picture} />
-              <AvatarFallback>{getInitials(name)}</AvatarFallback>
-            </Avatar>
-            <div>
-              <h2 className="text-2xl font-bold">{name}</h2>
-              <p className="text-sm text-muted-foreground">
-                {formatYear(born.year, born.approx)} -{" "}
-                {formatYear(died.year, died.approx)}
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              onClick={onClose}
-              className="w-12 h-12 ml-auto flex flex-col items-center justify-center"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+    <Card className="w-full max-w-md h-full max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="flex items-center p-4 shrink-0">
+        <Avatar className="h-16 w-16 mr-4">
+          <AvatarImage src={picture} />
+          <AvatarFallback>{getInitials(name)}</AvatarFallback>
+        </Avatar>
+        <div>
+          <h2 className="text-2xl font-bold">{name}</h2>
+          <p className="text-sm text-muted-foreground">
+            {formatYear(born.year, born.approx)} -{" "}
+            {formatYear(died.year, died.approx)}
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          onClick={onClose}
+          className="w-12 h-12 ml-auto flex flex-col items-center justify-center"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+      
+      <ScrollArea className="flex-1 overflow-y-auto">
+        <CardContent className="p-4 pt-0">
 
           <Tabs defaultValue="summary" className="w-full">
             <TabsList className="grid grid-cols-3 mb-4 gap-2">
