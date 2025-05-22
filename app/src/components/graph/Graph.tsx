@@ -47,6 +47,7 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
   const [highlightLinks, setHighlightLinks] = useState(new Set<string>());
   const [hoverNode, setHoverNode] = useState<GraphNodeWithCoords | null>(null);
   const [hoverLink, setHoverLink] = useState<NormalizedLink | null>(null);
+  const imgCache = useRef<Record<string, HTMLImageElement>>({});
 
   const normalizeNodeReference = useCallback(
     (
@@ -186,6 +187,18 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
   useEffect(() => {
     resetView();
   }, [resetView]);
+  
+  useEffect(() => {
+    if (data.nodes) {
+      data.nodes.forEach(node => {
+        if (node.data?.picture && !imgCache.current[node.data.picture]) {
+          const img = new Image();
+          img.src = node.data.picture;
+          imgCache.current[node.data.picture] = img;
+        }
+      });
+    }
+  }, [data.nodes]);
 
   return (
     <>
@@ -261,27 +274,89 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
           onLinkHover={handleLinkHover}
           onLinkClick={handleLinkClick}
           nodeCanvasObject={(node, ctx, globalScale) => {
-            const { x, y, name, color, val } = node;
+            const { x, y, name, color, val, data } = node;
             const fontSize = val * 1.2;
             const isHighlighted = highlightNodes.has(node.id as string);
-
+            const nodeRadius = val! * (isHighlighted ? 1.4 : 1);
+            
             ctx.beginPath();
-            ctx.arc(x!, y!, val! * (isHighlighted ? 1.4 : 1), 0, 2 * Math.PI);
+            ctx.arc(x!, y!, nodeRadius, 0, 2 * Math.PI);
             ctx.fillStyle = color || "#3B82F6";
             ctx.fill();
-
+            
+            const showImage = (globalScale > 1.5 || isHighlighted) && nodeRadius > 5;
+            
+            if (showImage) {
+              ctx.save();
+              ctx.beginPath();
+              ctx.arc(x!, y!, nodeRadius - 1, 0, 2 * Math.PI);
+              ctx.clip();
+              
+              if (data?.picture) {
+                const pictureUrl = data.picture;
+                
+                if (!imgCache.current[pictureUrl]) {
+                  const img = new Image();
+                  img.src = pictureUrl;
+                  imgCache.current[pictureUrl] = img;
+                  img.onload = () => {
+                    if (graphRef.current) {
+                      graphRef.current.refresh();
+                    }
+                  };
+                }
+                
+                const img = imgCache.current[pictureUrl];
+                
+                if (img.complete && img.naturalHeight !== 0) {
+                  const imgWidth = img.naturalWidth;
+                  const imgHeight = img.naturalHeight;
+                  const scale = Math.max(
+                    (nodeRadius * 2) / imgWidth,
+                    (nodeRadius * 2) / imgHeight
+                  );
+                  
+                  const scaledWidth = imgWidth * scale;
+                  const scaledHeight = imgHeight * scale;
+                  
+                  const imgX = x! - scaledWidth / 2;
+                  const imgY = y! - scaledHeight / 2;
+                  
+                  ctx.drawImage(img, imgX, imgY, scaledWidth, scaledHeight);
+                  ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+                  ctx.globalAlpha = 0.4;
+                  ctx.fill();
+                  ctx.globalAlpha = 1;
+                }
+              } else {
+                ctx.fillStyle = "#3B82F6";
+                ctx.fill();
+                
+                if (name && nodeRadius > 8) {
+                  const initial = name.charAt(0).toUpperCase();
+                  ctx.font = `${nodeRadius * 1.2}px Sans-Serif`;
+                  ctx.textAlign = "center";
+                  ctx.textBaseline = "middle";
+                  ctx.fillStyle = "#fff";
+                  ctx.fillText(initial, x!, y!);
+                }
+              }
+              
+              ctx.restore();
+            }
+            
             if (isHighlighted) {
               ctx.strokeStyle = "#ffffff";
               ctx.lineWidth = 0.5;
               ctx.stroke();
             }
-
+            
             if (globalScale > 1 || isHighlighted) {
               ctx.font = `${isHighlighted ? "bold " : ""}${fontSize}px Sans-Serif`;
               ctx.textAlign = "center";
               ctx.textBaseline = "middle";
               ctx.fillStyle = "#fff";
-              ctx.fillText(name as string, x!, y! + val! * 1.7);
+              ctx.fillText(name as string, x!, y! + nodeRadius * 1.3);
             }
           }}
           onNodeHover={handleNodeHover}
