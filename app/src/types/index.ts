@@ -36,6 +36,11 @@ export type GraphNode = {
   data: Mathematician;
 };
 
+export interface GraphNodeWithCoords extends GraphNode {
+  x?: number;
+  y?: number;
+};
+
 export type GraphLink = {
   source: string;
   target: string;

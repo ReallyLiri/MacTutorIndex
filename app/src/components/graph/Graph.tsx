@@ -4,17 +4,13 @@ import ForceGraph2D, {
   LinkObject,
   NodeObject,
 } from "react-force-graph-2d";
-import { GraphData, GraphNode, GraphLink } from "@/types";
+import { GraphData, GraphNode, GraphLink, GraphNodeWithCoords } from "@/types";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { renderNode } from "@/lib/graphUtils";
 
 type NodeReference = string | NodeObject<GraphNode>;
 type ForceGraphLink = LinkObject<NodeObject<GraphNode>, GraphLink>;
-
-interface GraphNodeWithCoords extends GraphNode {
-  x?: number;
-  y?: number;
-}
 
 interface NormalizedLink {
   sourceId: string;
@@ -201,26 +197,6 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
     }
   }, [selectedNodeId, data.nodes]);
   
-  useEffect(() => {
-    if (data.nodes) {
-      data.nodes.forEach(node => {
-        if (typeof node === 'object' && node.data?.picture) {
-          if (!imgCache.current[node.data.picture]) {
-            const img = new Image();
-            img.src = node.data.picture;
-            img.crossOrigin = "anonymous";
-            imgCache.current[node.data.picture] = img;
-            
-            img.onload = () => {
-              if (graphRef.current) {
-                graphRef.current.refresh();
-              }
-            };
-          }
-        }
-      });
-    }
-  }, [data.nodes]);
 
   return (
     <>
@@ -295,122 +271,57 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
           linkDirectionalParticleColor={() => "#ff9900"}
           onLinkHover={handleLinkHover}
           onLinkClick={handleLinkClick}
+          extraRenderers={[
+            // This renderer draws selected/hovered nodes on top of everything
+            (canvas, ctx, globalScale) => {
+              if (!selectedNodeId && !hoverNode) return false;
+              
+              // Find nodes to render on top
+              const nodesToDraw = data.nodes.filter(node => {
+                if (typeof node !== 'object') return false;
+                return node.id === selectedNodeId || (hoverNode && node.id === hoverNode.id);
+              }) as NodeObject<GraphNode>[];
+              
+              if (nodesToDraw.length === 0) return false;
+              
+              // Render these nodes on top
+              nodesToDraw.forEach(node => {
+                const isHovered = hoverNode && node.id === hoverNode.id;
+                const isSelected = node.id === selectedNodeId;
+                const isHighlighted = isHovered || isSelected;
+                
+                renderNode(
+                  node,
+                  ctx,
+                  globalScale,
+                  imgCache.current,
+                  isHighlighted,
+                  isSelected,
+                  () => { if (graphRef.current) graphRef.current.refresh(); }
+                );
+              });
+              
+              return false; // Continue with standard rendering for everything else
+            }
+          ]}
           nodeCanvasObject={(node, ctx, globalScale) => {
-            const { x, y, name, color, val, data } = node;
-            const fontSize = val * 1.2;
-            const isHighlighted = highlightNodes.has(node.id as string) || node.id === selectedNodeId;
-            const nodeRadius = val! * (isHighlighted ? 1.4 : 1);
-            
-            ctx.beginPath();
-            ctx.arc(x!, y!, nodeRadius, 0, 2 * Math.PI);
-            ctx.fillStyle = color || "#3B82F6";
-            ctx.fill();
-            
-            const showImage = (globalScale > 0.7 || isHighlighted) && nodeRadius > 3;
-            
-            if (showImage) {
-              ctx.save();
-              ctx.beginPath();
-              ctx.arc(x!, y!, nodeRadius - 1, 0, 2 * Math.PI);
-              ctx.clip();
-              
-              if (data?.picture) {
-                const pictureUrl = data.picture;
-                
-                if (!imgCache.current[pictureUrl]) {
-                  const img = new Image();
-                  img.src = pictureUrl;
-                  img.crossOrigin = "anonymous";
-                  imgCache.current[pictureUrl] = img;
-                  img.onload = () => {
-                    if (graphRef.current) {
-                      graphRef.current.refresh();
-                    }
-                  };
-                }
-                
-                const img = imgCache.current[pictureUrl];
-                
-                if (img.complete && img.naturalHeight !== 0) {
-                  const imgWidth = img.naturalWidth;
-                  const imgHeight = img.naturalHeight;
-                  const scale = Math.max(
-                    (nodeRadius * 2) / imgWidth,
-                    (nodeRadius * 2) / imgHeight
-                  );
-                  
-                  const scaledWidth = imgWidth * scale;
-                  const scaledHeight = imgHeight * scale;
-                  
-                  const imgX = x! - scaledWidth / 2;
-                  const imgY = y! - scaledHeight / 2;
-                  
-                  ctx.drawImage(img, imgX, imgY, scaledWidth, scaledHeight);
-                  ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
-                  ctx.globalAlpha = 0.4;
-                  ctx.fill();
-                  ctx.globalAlpha = 1;
-                } else {
-                  // Use initials as fallback if image failed to load
-                  if (name) {
-                    const getInitials = (name: string) => {
-                      return name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .toUpperCase();
-                    };
-                    
-                    const initial = getInitials(name);
-                    ctx.fillStyle = color || "#3B82F6";
-                    ctx.fill();
-                    
-                    ctx.font = `${nodeRadius * 0.8}px Sans-Serif`;
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
-                    ctx.fillStyle = "#fff";
-                    ctx.fillText(initial, x!, y!);
-                  }
-                }
-              } else {
-                ctx.fillStyle = "#3B82F6";
-                ctx.fill();
-                
-                if (name) {
-                  const getInitials = (name: string) => {
-                    return name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                      .toUpperCase()
-                      .substring(0, 2);
-                  };
-                  
-                  const initial = getInitials(name);
-                  ctx.font = `${Math.min(nodeRadius * 0.8, 12)}px Sans-Serif`;
-                  ctx.textAlign = "center";
-                  ctx.textBaseline = "middle";
-                  ctx.fillStyle = "#fff";
-                  ctx.fillText(initial, x!, y!);
-                }
-              }
-              
-              ctx.restore();
+            // Skip rendering selected/hovered nodes since they're handled in extraRenderers
+            if (node.id === selectedNodeId || (hoverNode && node.id === hoverNode.id)) {
+              return;
             }
             
-            if (isHighlighted) {
-              ctx.strokeStyle = node.id === selectedNodeId ? "#ffd700" : "#ffffff";
-              ctx.lineWidth = node.id === selectedNodeId ? 2 : 0.5;
-              ctx.stroke();
-            }
+            const isHighlighted = highlightNodes.has(node.id as string);
+            const isSelected = false; // Regular nodes are never selected here
             
-            if (globalScale > 1 || isHighlighted) {
-              ctx.font = `${isHighlighted ? "bold " : ""}${fontSize}px Sans-Serif`;
-              ctx.textAlign = "center";
-              ctx.textBaseline = "middle";
-              ctx.fillStyle = "#fff";
-              ctx.fillText(name as string, x!, y! + nodeRadius * 1.3);
-            }
+            renderNode(
+              node,
+              ctx,
+              globalScale,
+              imgCache.current,
+              isHighlighted,
+              isSelected,
+              () => { if (graphRef.current) graphRef.current.refresh(); }
+            );
           }}
           onNodeHover={handleNodeHover}
           onNodeClick={handleNodeClick}
