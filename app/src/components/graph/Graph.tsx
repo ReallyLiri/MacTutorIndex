@@ -240,7 +240,6 @@ const Graph = ({
                 if (graphRef.current && !throttleRef.current) {
                   throttleRef.current = true;
                   setTimeout(() => {
-                    graphRef.current?.refresh();
                     throttleRef.current = false;
                   }, 300);
                 }
@@ -390,7 +389,6 @@ const Graph = ({
                 if (graphRef.current && !throttleRef.current) {
                   throttleRef.current = true;
                   setTimeout(() => {
-                    graphRef.current?.refresh();
                     throttleRef.current = false;
                   }, 300);
                 }
@@ -400,8 +398,8 @@ const Graph = ({
           onNodeHover={handleNodeHover}
           onNodeClick={handleNodeClick}
           cooldownTicks={100}
-          d3AlphaDecay={0.02}
-          d3VelocityDecay={0.3}
+          d3AlphaDecay={0.002}
+          d3VelocityDecay={0.9}
         />
       </div>
     </>
