@@ -114,6 +114,7 @@ const Home = () => {
               data={graphData}
               onNodeClick={handleNodeClick}
               onLinkClick={handleLinkClick}
+              selectedNodeId={selectedNode?.id}
             />
 
             <div className="absolute bottom-4 right-4 z-10 w-full max-w-md">
@@ -121,6 +122,8 @@ const Home = () => {
                 <IdentityCard
                   mathematician={selectedNode.data}
                   onClose={handleCloseDetails}
+                  onPersonClick={handleNodeClick}
+                  availableNodes={graphData.nodes.filter(node => typeof node !== 'string') as GraphNode[]}
                 />
               )}
 

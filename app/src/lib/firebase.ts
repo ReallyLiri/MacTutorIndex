@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBn17Wz3Cpkc0vS8IWbOICzh_lZaskPztE",
@@ -13,5 +13,21 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+export const getMathematicianById = async (id: string) => {
+  try {
+    const docRef = doc(db, 'l2', id);
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching mathematician:", error);
+    return null;
+  }
+};
 
 export { db };

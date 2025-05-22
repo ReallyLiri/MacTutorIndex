@@ -18,6 +18,7 @@ export type Mathematician = {
   connections: {
     person: string;
     connection_type: string;
+    key: string;
   }[];
   lived_in: string[];
   worked_in: string[];

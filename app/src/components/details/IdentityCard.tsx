@@ -1,22 +1,116 @@
-import { X } from "lucide-react";
+import { Eye, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mathematician } from "@/types";
-import { useState } from "react";
+import { GraphNode, Mathematician } from "@/types";
+import { useEffect, useState } from "react";
 import MultiSelectFilter from "@/components/filters/MultiSelectFilter";
+import { getMathematicianById } from "@/lib/firebase";
 
 interface IdentityCardProps {
-  mathematician: Mathematician | null;
+  mathematician: Mathematician;
   onClose: () => void;
+  onPersonClick?: (node: GraphNode) => void;
+  availableNodes?: GraphNode[];
 }
 
-const IdentityCard = ({ mathematician, onClose }: IdentityCardProps) => {
-  if (!mathematician) return null;
+interface ConnectionPersonProps {
+  name: string;
+  connectionType: string;
+  personKey: string;
+  correspondingNode?: GraphNode;
+  onPersonClick?: (node: GraphNode) => void;
+}
 
+const ConnectionPerson = ({
+  name,
+  connectionType,
+  personKey,
+  correspondingNode,
+  onPersonClick,
+}: ConnectionPersonProps) => {
+  const [personData, setPersonData] = useState<Mathematician | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPerson = async () => {
+      setLoading(true);
+      const data = await getMathematicianById(personKey);
+      setPersonData(data as Mathematician | null);
+      setLoading(false);
+    };
+
+    fetchPerson();
+  }, [personKey]);
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
+  };
+
+  const handleClick = () => {
+    if (onPersonClick && correspondingNode) {
+      onPersonClick(correspondingNode);
+    }
+  };
+
+  return (
+    <div className="border rounded-md p-3 hover:bg-muted/50 transition-colors">
+      <h3 className="text-sm font-semibold capitalize mb-2">
+        {connectionType}
+      </h3>
+      <div className="flex items-center gap-2">
+        {loading ? (
+          <div className="h-8 w-8 rounded-full bg-muted animate-pulse"></div>
+        ) : (
+          <Avatar className="h-8 w-8">
+            <AvatarImage
+              src={personData?.picture}
+              className="object-cover w-full h-full"
+            />
+            <AvatarFallback>
+              {getInitials(personData?.name || name)}
+            </AvatarFallback>
+          </Avatar>
+        )}
+        <div className="flex-1">
+          <p className="text-sm">{personData?.name || name}</p>
+          {personData && (
+            <p className="text-xs text-muted-foreground">
+              {personData.born.year &&
+                `${personData.born.year} - ${personData.died.year || "?"}`}
+            </p>
+          )}
+        </div>
+        {personData && onPersonClick && correspondingNode && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-0 h-6 w-6"
+            onClick={handleClick}
+            title="View details"
+          >
+            <Eye className="h-4 w-4" />
+            <span className="sr-only">View details</span>
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const IdentityCard = ({
+  mathematician,
+  onClose,
+  onPersonClick,
+  availableNodes = [],
+}: IdentityCardProps) => {
   const {
     name,
     summary,
@@ -40,11 +134,13 @@ const IdentityCard = ({ mathematician, onClose }: IdentityCardProps) => {
   >([]);
 
   const filteredConnections = connections
-    ? connections.filter(
-        (conn) =>
-          selectedConnectionTypes.length === 0 ||
-          selectedConnectionTypes.includes(conn.connection_type),
-      )
+    ? connections
+        .filter(
+          (conn) =>
+            selectedConnectionTypes.length === 0 ||
+            selectedConnectionTypes.includes(conn.connection_type),
+        )
+        .sort((a, b) => a.key?.localeCompare(b.key))
     : [];
 
   const formatYear = (year: number | null, approx: boolean) => {
@@ -117,13 +213,22 @@ const IdentityCard = ({ mathematician, onClose }: IdentityCardProps) => {
         <CardContent className="p-4 pt-0">
           <Tabs defaultValue="summary" className="w-full">
             <TabsList className="flex mb-4 bg-muted/50 p-1 rounded-lg gap-2">
-              <TabsTrigger value="summary" className="flex-1 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <TabsTrigger
+                value="summary"
+                className="flex-1 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              >
                 Summary
               </TabsTrigger>
-              <TabsTrigger value="biography" className="flex-1 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <TabsTrigger
+                value="biography"
+                className="flex-1 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              >
                 Biography
               </TabsTrigger>
-              <TabsTrigger value="connections" className="flex-1 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <TabsTrigger
+                value="connections"
+                className="flex-1 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              >
                 Connections
               </TabsTrigger>
             </TabsList>
@@ -271,14 +376,20 @@ const IdentityCard = ({ mathematician, onClose }: IdentityCardProps) => {
                     />
 
                     {filteredConnections.length > 0 ? (
-                      filteredConnections.map((connection, i) => (
-                        <div key={i} className="border rounded-md p-3">
-                          <h3 className="text-sm font-semibold capitalize">
-                            {connection.connection_type}
-                          </h3>
-                          <p className="text-sm">{connection.person}</p>
-                        </div>
-                      ))
+                      <div className="space-y-3">
+                        {filteredConnections.map((connection, i) => (
+                          <ConnectionPerson
+                            key={i}
+                            name={connection.person}
+                            connectionType={connection.connection_type}
+                            personKey={connection.key}
+                            correspondingNode={availableNodes.find(
+                              (node) => node.id === connection.key,
+                            )}
+                            onPersonClick={onPersonClick}
+                          />
+                        ))}
+                      </div>
                     ) : (
                       <p className="text-sm text-muted-foreground">
                         No connections match the selected filters.

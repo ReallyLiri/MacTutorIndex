@@ -33,9 +33,10 @@ interface GraphProps {
   data: GraphData;
   onNodeClick: (node: GraphNode) => void;
   onLinkClick: (link: GraphLink) => void;
+  selectedNodeId?: string;
 }
 
-const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
+const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) => {
   const graphRef =
     useRef<
       ForceGraphMethods<
@@ -189,6 +190,18 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
   }, [resetView]);
   
   useEffect(() => {
+    if (selectedNodeId && data.nodes) {
+      const selectedNode = data.nodes.find(node => 
+        (typeof node === 'object' && node.id === selectedNodeId)
+      );
+      if (selectedNode && typeof selectedNode === 'object' && selectedNode.x && selectedNode.y && graphRef.current) {
+        graphRef.current.centerAt(selectedNode.x, selectedNode.y, 1000);
+        graphRef.current.zoom(2.5, 1000);
+      }
+    }
+  }, [selectedNodeId, data.nodes]);
+  
+  useEffect(() => {
     if (data.nodes) {
       data.nodes.forEach(node => {
         if (node.data?.picture && !imgCache.current[node.data.picture]) {
@@ -276,7 +289,7 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
           nodeCanvasObject={(node, ctx, globalScale) => {
             const { x, y, name, color, val, data } = node;
             const fontSize = val * 1.2;
-            const isHighlighted = highlightNodes.has(node.id as string);
+            const isHighlighted = highlightNodes.has(node.id as string) || node.id === selectedNodeId;
             const nodeRadius = val! * (isHighlighted ? 1.4 : 1);
             
             ctx.beginPath();
@@ -346,8 +359,8 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
             }
             
             if (isHighlighted) {
-              ctx.strokeStyle = "#ffffff";
-              ctx.lineWidth = 0.5;
+              ctx.strokeStyle = node.id === selectedNodeId ? "#ffd700" : "#ffffff";
+              ctx.lineWidth = node.id === selectedNodeId ? 2 : 0.5;
               ctx.stroke();
             }
             
