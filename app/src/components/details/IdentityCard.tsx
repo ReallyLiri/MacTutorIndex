@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GraphNode, Mathematician } from "@/types";
 import { useEffect, useState } from "react";
 import MultiSelectFilter from "@/components/filters/MultiSelectFilter";
-import { getMathematicianById } from "@/lib/firebase";
+import { useFirestore } from "@/hooks/useFirestore";
 import { getInitials, formatYear, formatPlace } from "@/lib/personUtils";
 
 const getConnectionColor = (connectionType: string): string => {
@@ -52,6 +52,7 @@ const ConnectionPerson = ({
 }: ConnectionPersonProps) => {
   const [personData, setPersonData] = useState<Mathematician | null>(null);
   const [loading, setLoading] = useState(true);
+  const { getMathematicianById } = useFirestore();
 
   useEffect(() => {
     const fetchPerson = async () => {
@@ -62,7 +63,7 @@ const ConnectionPerson = ({
     };
 
     fetchPerson();
-  }, [personKey]);
+  }, [personKey, getMathematicianById]);
 
   const handleClick = () => {
     if (onPersonClick) {

@@ -11,8 +11,9 @@ import WorkedInFilter from "./WorkedInFilter";
 import ProfessionFilter from "./ProfessionFilter";
 import { Checkbox } from "@/components/ui/checkbox.tsx";
 
+// ref https://mathshistory.st-andrews.ac.uk/Biographies/chronological/
 const MIN_YEAR = -1680;
-const MAX_YEAR = new Date().getFullYear();
+const MAX_YEAR = 1984;
 
 interface FilterPanelProps {
   filters: Filters;
