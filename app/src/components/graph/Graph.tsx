@@ -127,7 +127,9 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
   const handleNodeClick = useCallback(
     (node: NodeObject<GraphNode>) => {
       if (graphRef.current) {
-        graphRef.current.centerAt(node.x, node.y, 1000);
+        const windowWidth = window.innerWidth;
+        const xOffset = windowWidth * 0.15;
+        graphRef.current.centerAt(node.x + xOffset, node.y, 1000);
         graphRef.current.zoom(2.5, 1000);
       }
 
@@ -192,7 +194,9 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
         (typeof node === 'object' && node.id === selectedNodeId)
       );
       if (selectedNode && typeof selectedNode === 'object' && selectedNode.x && selectedNode.y && graphRef.current) {
-        graphRef.current.centerAt(selectedNode.x, selectedNode.y, 1000);
+        const windowWidth = window.innerWidth;
+        const xOffset = windowWidth * 0.15;
+        graphRef.current.centerAt(selectedNode.x + xOffset, selectedNode.y, 1000);
         graphRef.current.zoom(2.5, 1000);
       }
     }
@@ -238,7 +242,7 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
         <RefreshCw className="h-4 w-4 mr-2" />
         Reset View
       </Button>
-      <div className="w-full h-full relative">
+      <div id="graph-container" className="w-full h-full relative">
         {hoverNode && !hoverLink && (
           <div
             className="absolute bg-background/90 border rounded-md p-2 z-50 shadow-lg backdrop-blur-sm"
