@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import ForceGraph2D, {
   ForceGraphMethods,
   LinkObject,
@@ -183,110 +183,115 @@ const Graph = ({ data, onNodeClick, onLinkClick }: GraphProps) => {
     }
   }, []);
 
+  useEffect(() => {
+    resetView();
+  }, [resetView]);
+
   return (
-    <div className="w-full h-full relative">
+    <>
       <Button
         variant="outline"
         size="sm"
-        className="absolute top-4 right-4 z-10"
+        className="absolute top-20 right-4 z-10"
         onClick={resetView}
       >
         <RefreshCw className="h-4 w-4 mr-2" />
         Reset View
       </Button>
+      <div className="w-full h-full relative">
+        {hoverNode && !hoverLink && (
+          <div
+            className="absolute bg-background/90 border rounded-md p-2 z-50 shadow-lg backdrop-blur-sm"
+            style={{
+              left: `${hoverNode.x! + 10}px`,
+              top: `${hoverNode.y! - 10}px`,
+              transform: "translate(-50%, -100%)",
+              pointerEvents: "none",
+            }}
+          >
+            <p className="font-medium">{hoverNode.name}</p>
+          </div>
+        )}
 
-      {hoverNode && !hoverLink && (
-        <div
-          className="absolute bg-background/90 border rounded-md p-2 z-50 shadow-lg backdrop-blur-sm"
-          style={{
-            left: `${hoverNode.x! + 10}px`,
-            top: `${hoverNode.y! - 10}px`,
-            transform: "translate(-50%, -100%)",
-            pointerEvents: "none",
+        {hoverLink && (
+          <div
+            className="absolute bg-background/90 border rounded-md p-2 z-50 shadow-lg backdrop-blur-sm"
+            style={{
+              left: `${((hoverLink.sourceX || 0) + (hoverLink.targetX || 0)) / 2}px`,
+              top: `${((hoverLink.sourceY || 0) + (hoverLink.targetY || 0)) / 2}px`,
+              transform: "translate(-50%, -100%)",
+              pointerEvents: "none",
+            }}
+          >
+            <p className="text-sm">
+              <span className="font-medium">{hoverLink.sourceName}</span>{" "}
+              <span className="text-muted-foreground">{hoverLink.type}</span>{" "}
+              <span className="font-medium">{hoverLink.targetName}</span>
+            </p>
+          </div>
+        )}
+        <ForceGraph2D
+          ref={graphRef}
+          graphData={data}
+          nodeLabel="name"
+          nodeRelSize={6}
+          nodeAutoColorBy="id"
+          linkDirectionalArrowLength={3.5}
+          linkDirectionalArrowRelPos={1}
+          linkCurvature={0.25}
+          linkWidth={(link) => {
+            const normalized = normalizeLink(link as unknown as ForceGraphLink);
+            const linkId = `${normalized.sourceId}-${normalized.targetId}`;
+            return highlightLinks.has(linkId) ? 3 : 1;
           }}
-        >
-          <p className="font-medium">{hoverNode.name}</p>
-        </div>
-      )}
-
-      {hoverLink && (
-        <div
-          className="absolute bg-background/90 border rounded-md p-2 z-50 shadow-lg backdrop-blur-sm"
-          style={{
-            left: `${((hoverLink.sourceX || 0) + (hoverLink.targetX || 0)) / 2}px`,
-            top: `${((hoverLink.sourceY || 0) + (hoverLink.targetY || 0)) / 2}px`,
-            transform: "translate(-50%, -100%)",
-            pointerEvents: "none",
+          linkColor={(link) => {
+            const normalized = normalizeLink(link as unknown as ForceGraphLink);
+            const linkId = `${normalized.sourceId}-${normalized.targetId}`;
+            return highlightLinks.has(linkId)
+              ? "#ff9900"
+              : normalized.color || "#999";
           }}
-        >
-          <p className="text-sm">
-            <span className="font-medium">{hoverLink.sourceName}</span>{" "}
-            <span className="text-muted-foreground">{hoverLink.type}</span>{" "}
-            <span className="font-medium">{hoverLink.targetName}</span>
-          </p>
-        </div>
-      )}
-      <ForceGraph2D
-        ref={graphRef}
-        graphData={data}
-        nodeLabel="name"
-        nodeRelSize={6}
-        nodeAutoColorBy="id"
-        linkDirectionalArrowLength={3.5}
-        linkDirectionalArrowRelPos={1}
-        linkCurvature={0.25}
-        linkWidth={(link) => {
-          const normalized = normalizeLink(link as unknown as ForceGraphLink);
-          const linkId = `${normalized.sourceId}-${normalized.targetId}`;
-          return highlightLinks.has(linkId) ? 3 : 1;
-        }}
-        linkColor={(link) => {
-          const normalized = normalizeLink(link as unknown as ForceGraphLink);
-          const linkId = `${normalized.sourceId}-${normalized.targetId}`;
-          return highlightLinks.has(linkId)
-            ? "#ff9900"
-            : normalized.color || "#999";
-        }}
-        linkDirectionalParticles={(link) => {
-          const normalized = normalizeLink(link as unknown as ForceGraphLink);
-          const linkId = `${normalized.sourceId}-${normalized.targetId}`;
-          return highlightLinks.has(linkId) ? 5 : 0;
-        }}
-        linkDirectionalParticleWidth={3}
-        linkDirectionalParticleColor={() => "#ff9900"}
-        onLinkHover={handleLinkHover}
-        onLinkClick={handleLinkClick}
-        nodeCanvasObject={(node, ctx, globalScale) => {
-          const { x, y, name, color, val } = node;
-          const fontSize = val * 1.2;
-          const isHighlighted = highlightNodes.has(node.id as string);
+          linkDirectionalParticles={(link) => {
+            const normalized = normalizeLink(link as unknown as ForceGraphLink);
+            const linkId = `${normalized.sourceId}-${normalized.targetId}`;
+            return highlightLinks.has(linkId) ? 5 : 0;
+          }}
+          linkDirectionalParticleWidth={3}
+          linkDirectionalParticleColor={() => "#ff9900"}
+          onLinkHover={handleLinkHover}
+          onLinkClick={handleLinkClick}
+          nodeCanvasObject={(node, ctx, globalScale) => {
+            const { x, y, name, color, val } = node;
+            const fontSize = val * 1.2;
+            const isHighlighted = highlightNodes.has(node.id as string);
 
-          ctx.beginPath();
-          ctx.arc(x!, y!, val! * (isHighlighted ? 1.4 : 1), 0, 2 * Math.PI);
-          ctx.fillStyle = color || "#3B82F6";
-          ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x!, y!, val! * (isHighlighted ? 1.4 : 1), 0, 2 * Math.PI);
+            ctx.fillStyle = color || "#3B82F6";
+            ctx.fill();
 
-          if (isHighlighted) {
-            ctx.strokeStyle = "#ffffff";
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-          }
+            if (isHighlighted) {
+              ctx.strokeStyle = "#ffffff";
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
 
-          if (globalScale > 1 || isHighlighted) {
-            ctx.font = `${isHighlighted ? "bold " : ""}${fontSize}px Sans-Serif`;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillStyle = "#fff";
-            ctx.fillText(name as string, x!, y! + val! * 1.7);
-          }
-        }}
-        onNodeHover={handleNodeHover}
-        onNodeClick={handleNodeClick}
-        cooldownTicks={100}
-        d3AlphaDecay={0.02}
-        d3VelocityDecay={0.3}
-      />
-    </div>
+            if (globalScale > 1 || isHighlighted) {
+              ctx.font = `${isHighlighted ? "bold " : ""}${fontSize}px Sans-Serif`;
+              ctx.textAlign = "center";
+              ctx.textBaseline = "middle";
+              ctx.fillStyle = "#fff";
+              ctx.fillText(name as string, x!, y! + val! * 1.7);
+            }
+          }}
+          onNodeHover={handleNodeHover}
+          onNodeClick={handleNodeClick}
+          cooldownTicks={100}
+          d3AlphaDecay={0.02}
+          d3VelocityDecay={0.3}
+        />
+      </div>
+    </>
   );
 };
 
