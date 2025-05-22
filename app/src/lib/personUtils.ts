@@ -10,13 +10,11 @@ export function getInitials(name: string): string {
 }
 
 export function formatYear(year: number | null, approx: boolean): string {
-  if (year === null) return "Unknown";
-  return `${approx ? "c. " : ""}${year}`;
+  return year === null ? "Unknown" : `${approx ? "c. " : ""}${year}`;
 }
 
-export function formatPlace(place: string, link?: string): string {
-  if (!place) return "Unknown";
-  return place;
+export function formatPlace(place: string): string {
+  return !place ? "Unknown" : place;
 }
 
 export function createMacTutorUrl(mathematician: Mathematician): string {
@@ -31,14 +29,16 @@ export function createCitationUrl(name: string, text: string): string {
 
 export function formatSummaryText(text: string): string {
   if (!text) return "";
-  
+
   const parts = text.split(/(_[^_]+_)/g);
-  
-  return parts.map(part => {
-    if (part.match(/^_[^_]+_$/)) {
-      const italicText = part.slice(1, -1);
-      return italicText;
-    }
-    return part;
-  }).join("");
+
+  return parts
+    .map((part) => {
+      if (part.match(/^_[^_]+_$/)) {
+        const italicText = part.slice(1, -1);
+        return italicText;
+      }
+      return part;
+    })
+    .join("");
 }

@@ -119,6 +119,7 @@ const Home = () => {
               onNodeClick={handleNodeClick}
               onLinkClick={handleLinkClick}
               selectedNodeId={selectedNode?.id}
+              selectedLink={selectedLink}
             />
 
             <div className="absolute bottom-4 right-4 z-10 w-full max-w-md">

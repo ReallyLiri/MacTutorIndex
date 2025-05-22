@@ -8,6 +8,7 @@ import { GraphData, GraphNode, GraphLink, GraphNodeWithCoords } from "@/types";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { renderNode } from "@/lib/graphUtils";
+import { SearchBar } from "./SearchBar";
 
 type NodeReference = string | NodeObject<GraphNode>;
 type ForceGraphLink = LinkObject<NodeObject<GraphNode>, GraphLink>;
@@ -30,9 +31,24 @@ interface GraphProps {
   onNodeClick: (node: GraphNode) => void;
   onLinkClick: (link: GraphLink) => void;
   selectedNodeId?: string;
+  selectedLink: GraphLink | null;
 }
 
-const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) => {
+const Graph = ({
+  data,
+  onNodeClick,
+  onLinkClick,
+  selectedNodeId,
+  selectedLink,
+}: GraphProps) => {
+  const focusOnPosition = useCallback((x: number, y: number) => {
+    if (graphRef.current) {
+      const windowWidth = window.innerWidth;
+      const xOffset = windowWidth * 0.1;
+      graphRef.current.centerAt(x + xOffset, y, 1000);
+      graphRef.current.zoom(2.5, 1000);
+    }
+  }, []);
   const graphRef =
     useRef<
       ForceGraphMethods<
@@ -126,21 +142,27 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
 
   const handleNodeClick = useCallback(
     (node: NodeObject<GraphNode>) => {
-      if (graphRef.current) {
-        const windowWidth = window.innerWidth;
-        const xOffset = windowWidth * 0.15;
-        graphRef.current.centerAt(node.x + xOffset, node.y, 1000);
-        graphRef.current.zoom(2.5, 1000);
-      }
-
+      focusOnPosition(node.x, node.y);
       onNodeClick(node);
     },
-    [onNodeClick],
+    [onNodeClick, focusOnPosition],
   );
 
   const handleLinkClick = useCallback(
     (link: ForceGraphLink) => {
       const normalizedLink = normalizeLink(link);
+
+      if (
+        normalizedLink.sourceX !== undefined &&
+        normalizedLink.sourceY !== undefined &&
+        normalizedLink.targetX !== undefined &&
+        normalizedLink.targetY !== undefined
+      ) {
+        const centerX = (normalizedLink.sourceX + normalizedLink.targetX) / 2;
+        const centerY = (normalizedLink.sourceY + normalizedLink.targetY) / 2;
+
+        focusOnPosition(centerX, centerY);
+      }
 
       const linkData: GraphLink = {
         source: normalizedLink.sourceId,
@@ -151,7 +173,7 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
 
       onLinkClick(linkData);
     },
-    [onLinkClick, normalizeLink],
+    [onLinkClick, normalizeLink, focusOnPosition],
   );
 
   const handleLinkHover = useCallback(
@@ -187,26 +209,28 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
   useEffect(() => {
     resetView();
   }, [resetView]);
-  
+
   useEffect(() => {
     if (selectedNodeId && data.nodes) {
-      const selectedNode = data.nodes.find(node => 
-        (typeof node === 'object' && node.id === selectedNodeId)
+      const selectedNode = data.nodes.find(
+        (node) => typeof node === "object" && node.id === selectedNodeId,
       );
-      if (selectedNode && typeof selectedNode === 'object' && selectedNode.x && selectedNode.y && graphRef.current) {
-        const windowWidth = window.innerWidth;
-        const xOffset = windowWidth * 0.15;
-        graphRef.current.centerAt(selectedNode.x + xOffset, selectedNode.y, 1000);
-        graphRef.current.zoom(2.5, 1000);
+      if (
+        selectedNode &&
+        typeof selectedNode === "object" &&
+        selectedNode.x &&
+        selectedNode.y
+      ) {
+        focusOnPosition(selectedNode.x, selectedNode.y);
       }
     }
-  }, [selectedNodeId, data.nodes]);
-  
+  }, [selectedNodeId, data.nodes, focusOnPosition]);
+
   useEffect(() => {
     const preloadImages = () => {
       if (data.nodes) {
-        data.nodes.forEach(node => {
-          if (typeof node === 'object' && node.data?.picture) {
+        data.nodes.forEach((node) => {
+          if (typeof node === "object" && node.data?.picture) {
             const pictureUrl = node.data.picture;
             if (!imgCache.current[pictureUrl]) {
               const img = new Image();
@@ -226,10 +250,23 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
         });
       }
     };
-    
+
     preloadImages();
   }, [data.nodes]);
-  
+
+  const handleSearchNodeSelect = useCallback(
+    (node: GraphNode) => {
+      const graphNode = data.nodes.find(
+        (n) => typeof n === "object" && n.id === node.id,
+      ) as NodeObject<GraphNode>;
+
+      if (graphNode && graphNode.x && graphNode.y) {
+        focusOnPosition(graphNode.x, graphNode.y);
+        onNodeClick(node);
+      }
+    },
+    [data.nodes, focusOnPosition, onNodeClick],
+  );
 
   return (
     <>
@@ -242,6 +279,15 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
         <RefreshCw className="h-4 w-4 mr-2" />
         Reset View
       </Button>
+
+      <SearchBar
+        nodes={data.nodes.filter(
+          (node): node is GraphNode =>
+            typeof node === "object" && node.name !== undefined,
+        )}
+        onSelectNode={handleSearchNodeSelect}
+      />
+
       <div id="graph-container" className="w-full h-full relative">
         {hoverNode && !hoverLink && (
           <div
@@ -286,29 +332,51 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
           linkWidth={(link) => {
             const normalized = normalizeLink(link as unknown as ForceGraphLink);
             const linkId = `${normalized.sourceId}-${normalized.targetId}`;
-            return highlightLinks.has(linkId) ? 3 : 1;
+            const isSelectedLink =
+              selectedLink &&
+              ((selectedLink.source === normalized.sourceId &&
+                selectedLink.target === normalized.targetId) ||
+                (selectedLink.source === normalized.targetId &&
+                  selectedLink.target === normalized.sourceId));
+
+            return highlightLinks.has(linkId) || isSelectedLink ? 3 : 1;
           }}
           linkColor={(link) => {
             const normalized = normalizeLink(link as unknown as ForceGraphLink);
             const linkId = `${normalized.sourceId}-${normalized.targetId}`;
-            return highlightLinks.has(linkId)
+            const isSelectedLink =
+              selectedLink &&
+              ((selectedLink.source === normalized.sourceId &&
+                selectedLink.target === normalized.targetId) ||
+                (selectedLink.source === normalized.targetId &&
+                  selectedLink.target === normalized.sourceId));
+
+            return highlightLinks.has(linkId) || isSelectedLink
               ? "#ff9900"
               : normalized.color || "#999";
           }}
           linkDirectionalParticles={(link) => {
             const normalized = normalizeLink(link as unknown as ForceGraphLink);
             const linkId = `${normalized.sourceId}-${normalized.targetId}`;
-            return highlightLinks.has(linkId) ? 5 : 0;
+            const isSelectedLink =
+              selectedLink &&
+              ((selectedLink.source === normalized.sourceId &&
+                selectedLink.target === normalized.targetId) ||
+                (selectedLink.source === normalized.targetId &&
+                  selectedLink.target === normalized.sourceId));
+
+            return highlightLinks.has(linkId) || isSelectedLink ? 5 : 0;
           }}
           linkDirectionalParticleWidth={3}
           linkDirectionalParticleColor={() => "#ff9900"}
           onLinkHover={handleLinkHover}
           onLinkClick={handleLinkClick}
           nodeCanvasObject={(node, ctx, globalScale) => {
-            
-            const isHighlighted = highlightNodes.has(node.id as string) || node.id === selectedNodeId;
+            const isHighlighted =
+              highlightNodes.has(node.id as string) ||
+              node.id === selectedNodeId;
             const isSelected = node.id === selectedNodeId;
-            
+
             renderNode(
               node,
               ctx,
@@ -324,7 +392,7 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
                     throttleRef.current = false;
                   }, 300);
                 }
-              }
+              },
             );
           }}
           onNodeHover={handleNodeHover}

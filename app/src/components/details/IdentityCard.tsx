@@ -13,16 +13,16 @@ import { getInitials, formatYear, formatPlace } from "@/lib/personUtils";
 
 const getConnectionColor = (connectionType: string): string => {
   switch (connectionType.toLowerCase()) {
-    case 'influenced by':
-      return '#9333EA';
-    case 'collaborator with':
-      return '#14B8A6';
-    case 'teacher of':
-      return '#F97316';
-    case 'student of':
-      return '#22C55E';
+    case "influenced by":
+      return "#9333EA";
+    case "collaborator with":
+      return "#14B8A6";
+    case "teacher of":
+      return "#F97316";
+    case "student of":
+      return "#22C55E";
     default:
-      return '#94A3B8';
+      return "#94A3B8";
   }
 };
 
@@ -82,7 +82,10 @@ const ConnectionPerson = ({
   return (
     <div className="border rounded-md p-3 hover:bg-muted/50 transition-colors">
       <h3 className="text-sm font-semibold capitalize mb-2 flex items-center gap-1">
-        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: connectionColor || '#888' }}></span>
+        <span
+          className="h-2 w-2 rounded-full"
+          style={{ backgroundColor: connectionColor || "#888" }}
+        ></span>
         {connectionType}
       </h3>
       <div className="flex items-center gap-2">
@@ -394,7 +397,9 @@ const IdentityCard = ({
                               (node) => node.id === connection.key,
                             )}
                             onPersonClick={onPersonClick}
-                            connectionColor={getConnectionColor(connection.connection_type)}
+                            connectionColor={getConnectionColor(
+                              connection.connection_type,
+                            )}
                           />
                         ))}
                       </div>
