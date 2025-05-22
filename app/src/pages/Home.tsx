@@ -130,7 +130,9 @@ const Home = () => {
                   availableNodes={graphData.nodes.filter(node => typeof node !== 'string') as GraphNode[]}
                 />
               )}
+            </div>
 
+            <div className="absolute bottom-4 right-4 z-10 w-full max-w-2xl">
               {selectedLink && (
                 <ConnectionDetails
                   link={selectedLink}
