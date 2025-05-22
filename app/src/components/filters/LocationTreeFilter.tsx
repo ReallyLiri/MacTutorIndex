@@ -1,21 +1,19 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   ChevronDown,
-  ChevronUp,
-  ChevronRight,
   ChevronLeft,
+  ChevronRight,
+  ChevronUp,
 } from "lucide-react";
 import { normalizeText } from "@/lib/textUtils";
-import { 
-  LocationNode, 
-  flattenLocationTree, 
-  getNodeSelectionState,
+import {
   getAllSelectedPaths,
-  getDescendants
+  getNodeSelectionState,
+  LocationNode,
 } from "@/lib/locationUtils";
 
 interface LocationTreeFilterProps {
@@ -66,7 +64,7 @@ const LocationTreeItem = ({
           checked={selectionState === "checked"}
           indeterminate={selectionState === "indeterminate"}
           onCheckedChange={(checked) => onToggle(node, checked === true)}
-          className="h-4 w-4 mt-[0.2em]"
+          className={`h-4 w-4 ${hasChildren ? "" : "mt-[0.2em]"}`}
         />
         <div
           className="flex items-center gap-2 flex-1 cursor-pointer"
@@ -145,40 +143,40 @@ const LocationTreeFilter = ({
 
   const handleToggle = (node: LocationNode, checked: boolean) => {
     const currentSelections = new Set(value);
-    
+
+    const getAllPaths = (n: LocationNode): string[] => {
+      return [n.fullPath, ...n.children.flatMap(getAllPaths)];
+    };
+
     if (checked) {
-      currentSelections.add(node.fullPath);
-      const descendantPaths = flattenLocationTree([node]);
-      descendantPaths.forEach(path => currentSelections.add(path));
+      getAllPaths(node).forEach((path) => currentSelections.add(path));
     } else {
-      currentSelections.delete(node.fullPath);
-      const descendantPaths = flattenLocationTree([node]);
-      descendantPaths.forEach(path => currentSelections.delete(path));
+      getAllPaths(node).forEach((path) => currentSelections.delete(path));
     }
-    
+
     onChange(Array.from(currentSelections));
   };
 
   const handleSelectAll = () => {
     const paths = new Set<string>();
-    
+
     const addNodeAndDescendants = (node: LocationNode) => {
       paths.add(node.fullPath);
-      node.children.forEach(child => {
+      node.children.forEach((child) => {
         addNodeAndDescendants(child);
       });
     };
-    
+
     locationTree.forEach(addNodeAndDescendants);
-    
+
     onChange(Array.from(paths));
   };
 
   const handleClearAll = () => {
     onChange([]);
   };
-  
-  const effectiveSelectedPaths = getAllSelectedPaths(locationTree, value);
+
+  const effectiveSelectedPaths = getAllSelectedPaths(value);
 
   const selectedCount = value.length;
 
