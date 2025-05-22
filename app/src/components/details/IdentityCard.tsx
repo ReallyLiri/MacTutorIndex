@@ -55,8 +55,17 @@ const ConnectionPerson = ({
   };
 
   const handleClick = () => {
-    if (onPersonClick && correspondingNode) {
-      onPersonClick(correspondingNode);
+    if (onPersonClick) {
+      if (correspondingNode) {
+        onPersonClick(correspondingNode);
+      } else if (personData) {
+        onPersonClick({
+          id: personKey,
+          name: personData.name,
+          val: 5,
+          data: personData
+        } as GraphNode);
+      }
     }
   };
 
@@ -88,13 +97,13 @@ const ConnectionPerson = ({
             </p>
           )}
         </div>
-        {personData && onPersonClick && correspondingNode && (
+        {personData && onPersonClick && (
           <Button
             variant="ghost"
             size="sm"
-            className="p-0 h-6 w-6"
+            className={`p-0 h-6 w-6 ${correspondingNode ? '' : 'text-muted-foreground'}`}
             onClick={handleClick}
-            title="View details"
+            title={correspondingNode ? "View details" : "View details (not in graph)"}
           >
             <Eye className="h-4 w-4" />
             <span className="sr-only">View details</span>

@@ -64,7 +64,11 @@ const Home = () => {
   const graphData = useGraph(mathematicians, filters);
 
   const handleNodeClick = (node: GraphNode) => {
-    setSelectedNode(node);
+    const existingNode = node.id ? graphData.nodes.find(n => 
+      typeof n === 'object' && n.id === node.id
+    ) as GraphNode : null;
+    
+    setSelectedNode(existingNode || node);
     setSelectedLink(null);
   };
 
