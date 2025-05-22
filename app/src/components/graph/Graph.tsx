@@ -290,19 +290,6 @@ const Graph = ({
       />
 
       <div id="graph-container" className="w-full h-full relative">
-        {hoverNode && !hoverLink && (
-          <div
-            className="absolute bg-background/90 border rounded-md p-2 z-50 shadow-lg backdrop-blur-sm"
-            style={{
-              left: `${hoverNode.x! + 10}px`,
-              top: `${hoverNode.y! - 10}px`,
-              transform: "translate(-50%, -100%)",
-              pointerEvents: "none",
-            }}
-          >
-            <p className="font-medium">{hoverNode.name}</p>
-          </div>
-        )}
 
         {hoverLink && (
           <div
@@ -391,7 +378,8 @@ const Graph = ({
             const isHighlighted =
               highlightNodes.has(node.id as string) ||
               node.id === selectedNodeId;
-            const isSelected = node.id === selectedNodeId;
+            const isHovered = hoverNode && node.id === hoverNode.id;
+            const isSelected = node.id === selectedNodeId || isHovered;
 
             renderNode(
               node,
