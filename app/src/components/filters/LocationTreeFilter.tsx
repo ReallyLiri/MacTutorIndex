@@ -53,12 +53,14 @@ const LocationTreeItem = ({
 
   if (!isVisible) return null;
 
-  const indentPadding = `pl-${Math.min(node.depth * 4, 8)}`;
+  // Use inline style for padding to support deeper nesting
+  const indentPadding = node.depth * 1;
 
   return (
     <div>
       <div
-        className={`flex items-start space-x-2 min-h-6 ${indentPadding} py-1 hover:bg-muted/50`}
+        className="flex items-start space-x-2 min-h-6 py-1 hover:bg-muted/50"
+        style={{ paddingLeft: `${indentPadding}rem` }}
       >
         <Checkbox
           checked={selectionState === "checked"}
@@ -234,24 +236,31 @@ const LocationTreeFilter = ({
             <button
               className="text-xs hover:underline ml-auto"
               onClick={() => {
-                // Expand all top-level nodes
                 const newExpandedNodes = new Set(expandedNodes);
-                locationTree.forEach((node) => {
-                  newExpandedNodes.add(node.fullPath);
-                });
+                
+                // Recursive function to add all nodes and their children
+                const expandAllNodes = (nodes: LocationNode[]) => {
+                  nodes.forEach(node => {
+                    newExpandedNodes.add(node.fullPath);
+                    if (node.children.length > 0) {
+                      expandAllNodes(node.children);
+                    }
+                  });
+                };
+                
+                expandAllNodes(locationTree);
                 setExpandedNodes(newExpandedNodes);
               }}
             >
-              <ChevronDown className="h-3 w-3 inline" /> Expand
+              Expand All
             </button>
             <button
               className="text-xs hover:underline"
               onClick={() => {
-                // Collapse all nodes
                 setExpandedNodes(new Set());
               }}
             >
-              <ChevronLeft className="h-3 w-3 inline" /> Collapse
+              Collapse All
             </button>
           </div>
           <ScrollArea className="h-40">
