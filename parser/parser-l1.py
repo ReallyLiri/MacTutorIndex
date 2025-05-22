@@ -16,7 +16,7 @@ def extract_name(text):
 
 
 def extract_summary(text):
-    summary_match = re.search(r"Summary\s+(.+?)(?=\[|$)", text, re.DOTALL)
+    summary_match = re.search(r"Summary\s+(.+?)(?=\[|$)", text, re.DOTALL | re.MULTILINE)
     if summary_match:
         summary_text = summary_match.group(1).strip()
         return re.sub(r"\*\*(.+?)\*\*", r"\1", summary_text)
@@ -41,11 +41,7 @@ def extract_date_info(text_section):
         try:
             info["year"] = int(year_match.group(2))
             has_month_day = year_match.group(1) is not None
-            info["approx"] = (
-                "approx" in text_section.lower() or 
-                "about" in text_section.lower() or 
-                not has_month_day
-            )
+            info["approx"] = "approx" in text_section.lower() or "about" in text_section.lower() or not has_month_day
         except ValueError:
             pass
 
