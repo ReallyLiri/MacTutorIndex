@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ChevronLeft, ChevronRight, Filter } from "lucide-react";
 import YearRangeFilter from "./YearRangeFilter";
-import LocationFilter from "./LocationFilter";
+import LocationTreeFilter from "./LocationTreeFilter";
 import ReligionFilter from "./ReligionFilter";
 import InstitutionFilter from "./InstitutionFilter";
 import WorkedInFilter from "./WorkedInFilter";
 import ProfessionFilter from "./ProfessionFilter";
 import { Checkbox } from "@/components/ui/checkbox.tsx";
+import { LocationNode } from "@/lib/locationUtils";
 
 // ref https://mathshistory.st-andrews.ac.uk/Biographies/chronological/
 const MIN_YEAR = -1680;
@@ -18,7 +19,7 @@ const MAX_YEAR = 1984;
 interface FilterPanelProps {
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
-  allLocations: string[];
+  locationTree: LocationNode[];
   allReligions: string[];
   allInstitutions: string[];
   allWorkedIn: string[];
@@ -28,7 +29,7 @@ interface FilterPanelProps {
 const FilterPanel = ({
   filters,
   onFiltersChange,
-  allLocations,
+  locationTree,
   allReligions,
   allInstitutions,
   allWorkedIn,
@@ -132,12 +133,13 @@ const FilterPanel = ({
 
             <Separator />
 
-            <LocationFilter
+            <LocationTreeFilter
               value={draftFilters.locations}
-              options={allLocations}
+              locationTree={locationTree}
               onChange={(locations) =>
                 updateDraftFilters({ ...draftFilters, locations })
               }
+              title="Locations"
             />
 
             <Separator />

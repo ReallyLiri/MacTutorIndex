@@ -56,9 +56,14 @@ export const useFirestore = (filters: Filters) => {
               ].filter(Boolean) as string[];
 
               return filters.locations.some((location) =>
-                allLocations.some((loc) =>
-                  loc.toLowerCase().includes(location.toLowerCase()),
-                ),
+                allLocations.some((loc) => {
+                  const locParts = loc.split(/,\s*/).map(part => part.trim().replace(/[()]/g, '').toLowerCase());
+                  const locationParts = location.split(/,\s*/).map(part => part.trim().replace(/[()]/g, '').toLowerCase());
+                  
+                  return loc === location || 
+                         locParts.some(locPart => locationParts.includes(locPart)) ||
+                         locationParts.some(locPart => locParts.includes(locPart));
+                }),
               );
             });
           }

@@ -7,6 +7,7 @@ import FilterPanel from "@/components/filters/FilterPanel";
 import IdentityCard from "@/components/details/IdentityCard";
 import ConnectionDetails from "@/components/details/ConnectionDetails";
 import { Loader2 } from "lucide-react";
+import { buildLocationTree, LocationNode } from "@/lib/locationUtils";
 
 const DEFAULT_YEAR_RANGE: [number, number] = [1750, 1800];
 
@@ -46,18 +47,26 @@ const Home = () => {
     const professions = new Set<string>();
 
     mathematicians.forEach((mathematician) => {
-      mathematician.lived_in?.forEach((place) => locations.add(place));
-      mathematician.worked_in?.forEach((place) => workedIn.add(place));
+      mathematician.lived_in?.forEach((place) => {
+        if (place) locations.add(place);
+      });
+      mathematician.worked_in?.forEach((place) => {
+        if (place) workedIn.add(place);
+      });
       if (mathematician.born?.place) locations.add(mathematician.born.place);
       if (mathematician.died?.place) locations.add(mathematician.died.place);
 
-      mathematician.religions?.forEach((religion) => religions.add(religion));
+      mathematician.religions?.forEach((religion) => {
+        if (religion) religions.add(religion);
+      });
 
-      mathematician.institution_affiliation?.forEach((institution) =>
-        institutions.add(institution),
-      );
+      mathematician.institution_affiliation?.forEach((institution) => {
+        if (institution) institutions.add(institution);
+      });
 
-      mathematician.profession?.forEach((prof) => professions.add(prof));
+      mathematician.profession?.forEach((prof) => {
+        if (prof) professions.add(prof);
+      });
     });
 
     return [
@@ -69,6 +78,10 @@ const Home = () => {
     ];
   }, [mathematicians]);
 
+  const locationTree = useMemo(() => {
+    return buildLocationTree(allLocations);
+  }, [allLocations]);
+  
   const graphData = useGraph(mathematicians, filters);
 
   const handleNodeClick = (node: GraphNode) => {
@@ -108,7 +121,7 @@ const Home = () => {
       <FilterPanel
         filters={filters}
         onFiltersChange={setFilters}
-        allLocations={allLocations}
+        locationTree={locationTree}
         allReligions={allReligions}
         allInstitutions={allInstitutions}
         allWorkedIn={allWorkedIn}
