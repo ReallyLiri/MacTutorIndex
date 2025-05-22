@@ -323,7 +323,22 @@ const Graph = ({
         )}
         <ForceGraph2D
           ref={graphRef}
-          graphData={data}
+          graphData={{
+            nodes: [...data.nodes].sort((a, b) => {
+              const aIsSelected =
+                typeof a === "object" && a.id === selectedNodeId;
+              const bIsSelected =
+                typeof b === "object" && b.id === selectedNodeId;
+
+              if (aIsSelected !== bIsSelected) return aIsSelected ? 1 : -1;
+
+              if (typeof a === "object" && typeof b === "object") {
+                return a.name.localeCompare(b.name);
+              }
+              return 0;
+            }),
+            links: data.links,
+          }}
           nodeLabel="name"
           nodeRelSize={6}
           nodeAutoColorBy="id"
@@ -397,9 +412,9 @@ const Graph = ({
           }}
           onNodeHover={handleNodeHover}
           onNodeClick={handleNodeClick}
-          cooldownTicks={100}
+          cooldownTicks={graphRef.current ? 0 : 100}
           d3AlphaDecay={0.002}
-          d3VelocityDecay={0.9}
+          d3VelocityDecay={0.8}
         />
       </div>
     </>

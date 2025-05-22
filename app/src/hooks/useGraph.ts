@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Mathematician, GraphData, Filters } from "../types";
 
-export const useGraph = (mathematicians: Mathematician[], filters: Filters) => {
+export const useGraph = (mathematicians: Mathematician[]) => {
   return useMemo(() => {
     if (!mathematicians.length) return { nodes: [], links: [] };
 

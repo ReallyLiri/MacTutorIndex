@@ -81,8 +81,8 @@ const Home = () => {
   const locationTree = useMemo(() => {
     return buildLocationTree(allLocations);
   }, [allLocations]);
-  
-  const graphData = useGraph(mathematicians, filters);
+
+  const graphData = useGraph(mathematicians);
 
   const handleNodeClick = (node: GraphNode) => {
     const existingNode = node.id

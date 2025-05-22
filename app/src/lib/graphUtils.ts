@@ -1,5 +1,5 @@
 import { NodeObject } from "react-force-graph-2d";
-import { GraphNode, GraphNodeWithCoords } from "@/types";
+import { GraphNode } from "@/types";
 
 export const getInitials = (name: string) => {
   return name
