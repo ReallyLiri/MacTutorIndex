@@ -6,6 +6,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface MultiSelectFilterProps {
+  className?: string;
   value: string[];
   options: string[];
   onChange: (value: string[]) => void;
@@ -16,6 +17,7 @@ interface MultiSelectFilterProps {
 }
 
 const MultiSelectFilter = ({
+  className,
   value,
   options,
   onChange,
@@ -47,7 +49,7 @@ const MultiSelectFilter = ({
   const selectedCount = value.length;
 
   return (
-    <div className="space-y-2">
+    <div className={`space-y-2 ${className}`}>
       <div
         className="flex items-center justify-between cursor-pointer"
         onClick={toggleExpand}
@@ -84,11 +86,11 @@ const MultiSelectFilter = ({
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <ScrollArea className="h-32">
-            <div className="space-y-2">
+            <div className="space-y-1 mt-1">
               {filteredOptions.map((option) => (
                 <div
                   key={option}
-                  className="flex items-start space-x-2 min-h-6"
+                  className="flex items-start space-x-2 min-h-6 ml-1"
                 >
                   <Checkbox
                     id={`${type}-${option}`}

@@ -6,6 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mathematician } from "@/types";
+import { useState } from "react";
+import MultiSelectFilter from "@/components/filters/MultiSelectFilter";
 
 interface IdentityCardProps {
   mathematician: Mathematician | null;
@@ -28,6 +30,22 @@ const IdentityCard = ({ mathematician, onClose }: IdentityCardProps) => {
     institution_affiliation,
     connections,
   } = mathematician;
+
+  const connectionTypes = connections
+    ? [...new Set(connections.map((conn) => conn.connection_type))]
+    : [];
+
+  const [selectedConnectionTypes, setSelectedConnectionTypes] = useState<
+    string[]
+  >([]);
+
+  const filteredConnections = connections
+    ? connections.filter(
+        (conn) =>
+          selectedConnectionTypes.length === 0 ||
+          selectedConnectionTypes.includes(conn.connection_type),
+      )
+    : [];
 
   const formatYear = (year: number | null, approx: boolean) => {
     if (year === null) return "Unknown";
@@ -57,12 +75,12 @@ const IdentityCard = ({ mathematician, onClose }: IdentityCardProps) => {
       .join("")
       .toUpperCase();
   };
-  
+
   const formatSummaryText = (text: string) => {
     if (!text) return "";
-    
+
     const parts = text.split(/(_[^_]+_)/g);
-    
+
     return parts.map((part, index) => {
       if (part.match(/^_[^_]+_$/)) {
         const italicText = part.slice(1, -1);
@@ -94,10 +112,9 @@ const IdentityCard = ({ mathematician, onClose }: IdentityCardProps) => {
           <X className="h-4 w-4" />
         </Button>
       </div>
-      
+
       <ScrollArea className="flex-1 overflow-y-auto">
         <CardContent className="p-4 pt-0">
-
           <Tabs defaultValue="summary" className="w-full">
             <TabsList className="grid grid-cols-3 mb-4 gap-2">
               <TabsTrigger value="summary">Summary</TabsTrigger>
@@ -108,11 +125,13 @@ const IdentityCard = ({ mathematician, onClose }: IdentityCardProps) => {
             <TabsContent value="summary" className="mt-0">
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm leading-relaxed">{formatSummaryText(summary)}</p>
+                  <p className="text-sm leading-relaxed">
+                    {formatSummaryText(summary)}
+                  </p>
                   <div className="mt-4">
-                    <a 
+                    <a
                       href={`https://mathshistory.st-andrews.ac.uk/Biographies/${mathematician.id}`}
-                      target="_blank" 
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs text-blue-500 hover:underline"
                     >
@@ -233,14 +252,33 @@ const IdentityCard = ({ mathematician, onClose }: IdentityCardProps) => {
             <TabsContent value="connections" className="mt-0">
               <div className="space-y-4">
                 {connections && connections.length > 0 ? (
-                  connections.map((connection, i) => (
-                    <div key={i} className="border rounded-md p-3">
-                      <h3 className="text-sm font-semibold capitalize">
-                        {connection.connection_type}
-                      </h3>
-                      <p className="text-sm">{connection.person}</p>
-                    </div>
-                  ))
+                  <>
+                    <MultiSelectFilter
+                      className="p-1"
+                      value={selectedConnectionTypes}
+                      options={connectionTypes}
+                      onChange={setSelectedConnectionTypes}
+                      placeholder="Search connection types..."
+                      type="connection-type"
+                      emptyMessage="No connection types found"
+                      title="Filter by connection type"
+                    />
+
+                    {filteredConnections.length > 0 ? (
+                      filteredConnections.map((connection, i) => (
+                        <div key={i} className="border rounded-md p-3">
+                          <h3 className="text-sm font-semibold capitalize">
+                            {connection.connection_type}
+                          </h3>
+                          <p className="text-sm">{connection.person}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        No connections match the selected filters.
+                      </p>
+                    )}
+                  </>
                 ) : (
                   <p className="text-sm text-muted-foreground">
                     No connection data available.
