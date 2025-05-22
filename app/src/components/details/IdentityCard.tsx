@@ -57,12 +57,26 @@ const IdentityCard = ({ mathematician, onClose }: IdentityCardProps) => {
       .join("")
       .toUpperCase();
   };
+  
+  const formatSummaryText = (text: string) => {
+    if (!text) return "";
+    
+    const parts = text.split(/(_[^_]+_)/g);
+    
+    return parts.map((part, index) => {
+      if (part.match(/^_[^_]+_$/)) {
+        const italicText = part.slice(1, -1);
+        return <i key={index}>{italicText}</i>;
+      }
+      return part;
+    });
+  };
 
   return (
     <Card className="w-full max-w-md h-full max-h-[90vh] flex flex-col overflow-hidden">
       <div className="flex items-center p-4 shrink-0">
         <Avatar className="h-16 w-16 mr-4">
-          <AvatarImage src={picture} />
+          <AvatarImage src={picture} className="object-cover w-full h-full" />
           <AvatarFallback>{getInitials(name)}</AvatarFallback>
         </Avatar>
         <div>
@@ -94,7 +108,17 @@ const IdentityCard = ({ mathematician, onClose }: IdentityCardProps) => {
             <TabsContent value="summary" className="mt-0">
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm leading-relaxed">{summary}</p>
+                  <p className="text-sm leading-relaxed">{formatSummaryText(summary)}</p>
+                  <div className="mt-4">
+                    <a 
+                      href={`https://mathshistory.st-andrews.ac.uk/Biographies/${mathematician.id}`}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-500 hover:underline"
+                    >
+                      View on MacTutor
+                    </a>
+                  </div>
                 </div>
               </div>
             </TabsContent>
