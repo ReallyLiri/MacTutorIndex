@@ -116,10 +116,16 @@ const IdentityCard = ({ mathematician, onClose }: IdentityCardProps) => {
       <ScrollArea className="flex-1 overflow-y-auto">
         <CardContent className="p-4 pt-0">
           <Tabs defaultValue="summary" className="w-full">
-            <TabsList className="grid grid-cols-3 mb-4 gap-2">
-              <TabsTrigger value="summary">Summary</TabsTrigger>
-              <TabsTrigger value="biography">Biography</TabsTrigger>
-              <TabsTrigger value="connections">Connections</TabsTrigger>
+            <TabsList className="flex mb-4 bg-muted/50 p-1 rounded-lg gap-2">
+              <TabsTrigger value="summary" className="flex-1 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                Summary
+              </TabsTrigger>
+              <TabsTrigger value="biography" className="flex-1 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                Biography
+              </TabsTrigger>
+              <TabsTrigger value="connections" className="flex-1 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                Connections
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="summary" className="mt-0">
