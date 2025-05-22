@@ -68,7 +68,14 @@ def process_file(filename):
             return False, filename, f"L1 data not found: {l1_file}"
 
         if os.path.exists(output_path) and not FORCE_RUN:
-            return True, filename, "Skipped (already exists)"
+            with open(output_path, "r") as f:
+                existing_data = json.loads(f.read())
+            if (
+                "connections" in existing_data
+                and isinstance(existing_data["connections"], list)
+                and all(isinstance(conn, dict) for conn in existing_data["connections"])
+            ):
+                return True, filename, "Skipped (already exists)"
 
         with open(os.path.join(MD_INPUT_DIR, filename), "r", encoding="utf-8") as f:
             markdown_text = f.read()
@@ -127,11 +134,4 @@ def parse_biographies(filenames=None):
 
 
 if __name__ == "__main__":
-    sample_files = [
-        "Al-Tusi_Nasir.md",
-        "Euclid.md",
-        "Godel.md",
-        "Leibniz.md",
-        "Newton.md",
-    ]
     parse_biographies()
