@@ -39,10 +39,10 @@ export const renderNode = (
     const img = new Image();
     img.src = data.picture;
     
-    if (img.complete && img.naturalHeight !== 0) {
-      try {
-        const imgWidth = img.naturalWidth;
-        const imgHeight = img.naturalHeight;
+    try {
+      if (img.complete && img.naturalHeight !== 0) {
+        const imgWidth = img.naturalWidth || nodeRadius * 2;
+        const imgHeight = img.naturalHeight || nodeRadius * 2;
         const scale = Math.max(
           (nodeRadius * 2) / imgWidth,
           (nodeRadius * 2) / imgHeight
@@ -55,12 +55,12 @@ export const renderNode = (
         const imgY = y! - scaledHeight / 2;
         
         ctx.drawImage(img, imgX, imgY, scaledWidth, scaledHeight);
-      } catch (e) {
+      } else {
         drawInitials();
+        img.onload = graphRefreshCallback;
       }
-    } else {
+    } catch (e) {
       drawInitials();
-      img.onload = graphRefreshCallback;
     }
     
     ctx.restore();

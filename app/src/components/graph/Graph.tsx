@@ -271,47 +271,10 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
           linkDirectionalParticleColor={() => "#ff9900"}
           onLinkHover={handleLinkHover}
           onLinkClick={handleLinkClick}
-          extraRenderers={[
-            // This renderer draws selected/hovered nodes on top of everything
-            (canvas, ctx, globalScale) => {
-              if (!selectedNodeId && !hoverNode) return false;
-              
-              // Find nodes to render on top
-              const nodesToDraw = data.nodes.filter(node => {
-                if (typeof node !== 'object') return false;
-                return node.id === selectedNodeId || (hoverNode && node.id === hoverNode.id);
-              }) as NodeObject<GraphNode>[];
-              
-              if (nodesToDraw.length === 0) return false;
-              
-              // Render these nodes on top
-              nodesToDraw.forEach(node => {
-                const isHovered = hoverNode && node.id === hoverNode.id;
-                const isSelected = node.id === selectedNodeId;
-                const isHighlighted = isHovered || isSelected;
-                
-                renderNode(
-                  node,
-                  ctx,
-                  globalScale,
-                  imgCache.current,
-                  isHighlighted,
-                  isSelected,
-                  () => { if (graphRef.current) graphRef.current.refresh(); }
-                );
-              });
-              
-              return false; // Continue with standard rendering for everything else
-            }
-          ]}
           nodeCanvasObject={(node, ctx, globalScale) => {
-            // Skip rendering selected/hovered nodes since they're handled in extraRenderers
-            if (node.id === selectedNodeId || (hoverNode && node.id === hoverNode.id)) {
-              return;
-            }
             
-            const isHighlighted = highlightNodes.has(node.id as string);
-            const isSelected = false; // Regular nodes are never selected here
+            const isHighlighted = highlightNodes.has(node.id as string) || node.id === selectedNodeId;
+            const isSelected = node.id === selectedNodeId;
             
             renderNode(
               node,
