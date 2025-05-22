@@ -34,6 +34,8 @@ interface GraphProps {
   selectedLink: GraphLink | null;
 }
 
+const MOVE_DURATION_MS = 1000;
+
 const Graph = ({
   data,
   onNodeClick,
@@ -45,8 +47,8 @@ const Graph = ({
     if (graphRef.current) {
       const windowWidth = window.innerWidth;
       const xOffset = windowWidth * 0.1;
-      graphRef.current.centerAt(x + xOffset, y, 1000);
-      graphRef.current.zoom(2.5, 1000);
+      graphRef.current.centerAt(x + xOffset, y, MOVE_DURATION_MS);
+      graphRef.current.zoom(2.5, MOVE_DURATION_MS);
     }
   }, []);
   const graphRef =
@@ -201,8 +203,8 @@ const Graph = ({
 
   const resetView = useCallback(() => {
     if (graphRef.current) {
-      graphRef.current.centerAt(0, 0);
-      graphRef.current.zoom(1, 1000);
+      graphRef.current.centerAt(window.innerWidth * 0.1, 0);
+      graphRef.current.zoom(1.5, MOVE_DURATION_MS);
     }
   }, []);
 
