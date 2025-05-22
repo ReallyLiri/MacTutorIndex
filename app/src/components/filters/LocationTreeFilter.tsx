@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,13 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { normalizeText } from "@/lib/textUtils";
-import { LocationNode, flattenLocationTree } from "@/lib/locationUtils";
+import { 
+  LocationNode, 
+  flattenLocationTree, 
+  getNodeSelectionState,
+  getAllSelectedPaths,
+  getDescendants
+} from "@/lib/locationUtils";
 
 interface LocationTreeFilterProps {
   className?: string;
@@ -22,19 +28,20 @@ interface LocationTreeFilterProps {
 
 const LocationTreeItem = ({
   node,
-  selected,
+  selectedPaths,
   onToggle,
   searchQuery,
   expandedNodes,
   toggleExpand,
 }: {
   node: LocationNode;
-  selected: boolean;
+  selectedPaths: string[];
   onToggle: (node: LocationNode, checked: boolean) => void;
   searchQuery: string;
   expandedNodes: Set<string>;
   toggleExpand: (node: LocationNode) => void;
 }) => {
+  const selectionState = getNodeSelectionState(node, selectedPaths);
   const isExpanded = expandedNodes.has(node.fullPath);
   const hasChildren = node.children.length > 0;
   const normalizedQuery = normalizeText(searchQuery);
@@ -56,8 +63,9 @@ const LocationTreeItem = ({
         className={`flex items-start space-x-2 min-h-6 ${indentPadding} py-1 hover:bg-muted/50`}
       >
         <Checkbox
-          checked={selected}
-          onCheckedChange={(checked) => onToggle(node, !!checked)}
+          checked={selectionState === "checked"}
+          indeterminate={selectionState === "indeterminate"}
+          onCheckedChange={(checked) => onToggle(node, checked === true)}
           className="h-4 w-4 mt-[0.2em]"
         />
         <div
@@ -97,7 +105,7 @@ const LocationTreeItem = ({
             <LocationTreeItem
               key={child.fullPath}
               node={child}
-              selected={selected}
+              selectedPaths={selectedPaths}
               onToggle={onToggle}
               searchQuery={searchQuery}
               expandedNodes={expandedNodes}
@@ -136,31 +144,41 @@ const LocationTreeFilter = ({
   };
 
   const handleToggle = (node: LocationNode, checked: boolean) => {
+    const currentSelections = new Set(value);
+    
     if (checked) {
+      currentSelections.add(node.fullPath);
       const descendantPaths = flattenLocationTree([node]);
-      const newValue = [...value, ...descendantPaths].filter(
-        (v, i, a) => a.indexOf(v) === i,
-      );
-      onChange(newValue);
+      descendantPaths.forEach(path => currentSelections.add(path));
     } else {
+      currentSelections.delete(node.fullPath);
       const descendantPaths = flattenLocationTree([node]);
-      const newValue = value.filter((v) => !descendantPaths.includes(v));
-      onChange(newValue);
+      descendantPaths.forEach(path => currentSelections.delete(path));
     }
+    
+    onChange(Array.from(currentSelections));
   };
 
   const handleSelectAll = () => {
-    const allPaths = flattenLocationTree(locationTree);
-    onChange(allPaths);
+    const paths = new Set<string>();
+    
+    const addNodeAndDescendants = (node: LocationNode) => {
+      paths.add(node.fullPath);
+      node.children.forEach(child => {
+        addNodeAndDescendants(child);
+      });
+    };
+    
+    locationTree.forEach(addNodeAndDescendants);
+    
+    onChange(Array.from(paths));
   };
 
   const handleClearAll = () => {
     onChange([]);
   };
-
-  const isNodeSelected = (node: LocationNode): boolean => {
-    return value.includes(node.fullPath);
-  };
+  
+  const effectiveSelectedPaths = getAllSelectedPaths(locationTree, value);
 
   const selectedCount = value.length;
 
@@ -244,7 +262,7 @@ const LocationTreeFilter = ({
                 <LocationTreeItem
                   key={node.fullPath}
                   node={node}
-                  selected={isNodeSelected(node)}
+                  selectedPaths={effectiveSelectedPaths}
                   onToggle={handleToggle}
                   searchQuery={searchQuery}
                   expandedNodes={expandedNodes}
