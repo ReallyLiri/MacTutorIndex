@@ -237,17 +237,17 @@ const LocationTreeFilter = ({
               className="text-xs hover:underline ml-auto"
               onClick={() => {
                 const newExpandedNodes = new Set(expandedNodes);
-                
+
                 // Recursive function to add all nodes and their children
                 const expandAllNodes = (nodes: LocationNode[]) => {
-                  nodes.forEach(node => {
+                  nodes.forEach((node) => {
                     newExpandedNodes.add(node.fullPath);
                     if (node.children.length > 0) {
                       expandAllNodes(node.children);
                     }
                   });
                 };
-                
+
                 expandAllNodes(locationTree);
                 setExpandedNodes(newExpandedNodes);
               }}

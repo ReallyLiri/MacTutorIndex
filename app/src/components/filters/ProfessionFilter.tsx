@@ -6,7 +6,11 @@ interface ProfessionFilterProps {
   onChange: (value: string[]) => void;
 }
 
-const ProfessionFilter = ({ value, options, onChange }: ProfessionFilterProps) => {
+const ProfessionFilter = ({
+  value,
+  options,
+  onChange,
+}: ProfessionFilterProps) => {
   return (
     <MultiSelectFilter
       value={value}

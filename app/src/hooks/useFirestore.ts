@@ -1,5 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
-import { collection, getDocs, doc, getDoc, query, where } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  doc,
+  getDoc,
+  query,
+  where,
+} from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Filters, Mathematician } from "../types";
 
@@ -36,60 +43,63 @@ export const useFirestore = (filters: Filters) => {
         const maxYear = filters.yearRange[1];
 
         const mathematiciansRef = collection(db, COLLECTION_NAME);
-        
+
         const birthInRangeQuery = query(
           mathematiciansRef,
           where("born.year", ">=", minYear),
-          where("born.year", "<=", maxYear)
+          where("born.year", "<=", maxYear),
         );
-        
+
         const birthInRangeSnapshot = await getDocs(birthInRangeQuery);
         const birthInRangeData = birthInRangeSnapshot.docs.map(
-          (doc) => ({ id: doc.id, ...doc.data() }) as Mathematician
+          (doc) => ({ id: doc.id, ...doc.data() }) as Mathematician,
         );
-        
+
         let mathematiciansData = [...birthInRangeData];
-        
+
         let additionalData: Mathematician[] = [];
-        
+
         const estimatedBirthMinYear = minYear + AVERAGE_LIFESPAN;
         const estimatedBirthMaxYear = maxYear + AVERAGE_LIFESPAN;
-        
+
         const deathYearQuery = query(
           mathematiciansRef,
           where("born.year", "==", null),
           where("died.year", ">=", estimatedBirthMinYear),
-          where("died.year", "<=", estimatedBirthMaxYear)
+          where("died.year", "<=", estimatedBirthMaxYear),
         );
-        
+
         const deathYearSnapshot = await getDocs(deathYearQuery);
         const deathYearData = deathYearSnapshot.docs
           .map((doc) => ({ id: doc.id, ...doc.data() }) as Mathematician)
-          .filter(m => {
+          .filter((m) => {
             const deathYear = m.died?.year;
             if (deathYear !== null) {
               const estimatedBirthYear = deathYear - AVERAGE_LIFESPAN;
-              return estimatedBirthYear >= minYear && estimatedBirthYear <= maxYear;
+              return (
+                estimatedBirthYear >= minYear && estimatedBirthYear <= maxYear
+              );
             }
             return false;
           });
-        
+
         additionalData = [...deathYearData];
-        
+
         if (filters.includeUnknown) {
           const unknownQuery = query(
             mathematiciansRef,
             where("born.year", "==", null),
-            where("died.year", "==", null)
+            where("died.year", "==", null),
           );
-          
+
           const unknownSnapshot = await getDocs(unknownQuery);
-          const unknownData = unknownSnapshot.docs
-            .map((doc) => ({ id: doc.id, ...doc.data() }) as Mathematician);
-          
+          const unknownData = unknownSnapshot.docs.map(
+            (doc) => ({ id: doc.id, ...doc.data() }) as Mathematician,
+          );
+
           additionalData = [...additionalData, ...unknownData];
         }
-        
+
         mathematiciansData = [...mathematiciansData, ...additionalData];
 
         if (filters) {

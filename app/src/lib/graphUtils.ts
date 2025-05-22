@@ -77,15 +77,15 @@ export const renderNode = (
   if (isSelected) {
     const labelText = name as string;
     const labelY = y! + nodeRadius * 1.3;
-    
+
     ctx.font = `bold ${fontSize}px Sans-Serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    
+
     ctx.lineWidth = 3;
     ctx.strokeStyle = "rgba(0, 0, 0, 0.8)";
     ctx.strokeText(labelText, x!, labelY);
-    
+
     ctx.fillStyle = "#ffffff";
     ctx.fillText(labelText, x!, labelY);
   }
