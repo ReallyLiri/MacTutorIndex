@@ -290,7 +290,6 @@ const Graph = ({
       />
 
       <div id="graph-container" className="w-full h-full relative">
-
         {hoverLink && (
           <div
             className="absolute bg-background/90 border rounded-md p-2 z-50 shadow-lg backdrop-blur-sm"
@@ -400,8 +399,8 @@ const Graph = ({
           }}
           onNodeHover={handleNodeHover}
           onNodeClick={handleNodeClick}
-          cooldownTicks={graphRef.current ? 0 : 100}
-          d3AlphaDecay={0.002}
+          cooldownTicks={graphRef.current ? 0 : 100 * (data.nodes.length / 100)}
+          d3AlphaDecay={0.01}
           d3VelocityDecay={0.8}
         />
       </div>
