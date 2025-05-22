@@ -204,10 +204,19 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
   useEffect(() => {
     if (data.nodes) {
       data.nodes.forEach(node => {
-        if (node.data?.picture && !imgCache.current[node.data.picture]) {
-          const img = new Image();
-          img.src = node.data.picture;
-          imgCache.current[node.data.picture] = img;
+        if (typeof node === 'object' && node.data?.picture) {
+          if (!imgCache.current[node.data.picture]) {
+            const img = new Image();
+            img.src = node.data.picture;
+            img.crossOrigin = "anonymous";
+            imgCache.current[node.data.picture] = img;
+            
+            img.onload = () => {
+              if (graphRef.current) {
+                graphRef.current.refresh();
+              }
+            };
+          }
         }
       });
     }
@@ -297,7 +306,7 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
             ctx.fillStyle = color || "#3B82F6";
             ctx.fill();
             
-            const showImage = (globalScale > 1.5 || isHighlighted) && nodeRadius > 5;
+            const showImage = (globalScale > 0.7 || isHighlighted) && nodeRadius > 3;
             
             if (showImage) {
               ctx.save();
@@ -311,6 +320,7 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
                 if (!imgCache.current[pictureUrl]) {
                   const img = new Image();
                   img.src = pictureUrl;
+                  img.crossOrigin = "anonymous";
                   imgCache.current[pictureUrl] = img;
                   img.onload = () => {
                     if (graphRef.current) {
@@ -340,14 +350,44 @@ const Graph = ({ data, onNodeClick, onLinkClick, selectedNodeId }: GraphProps) =
                   ctx.globalAlpha = 0.4;
                   ctx.fill();
                   ctx.globalAlpha = 1;
+                } else {
+                  // Use initials as fallback if image failed to load
+                  if (name) {
+                    const getInitials = (name: string) => {
+                      return name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase();
+                    };
+                    
+                    const initial = getInitials(name);
+                    ctx.fillStyle = color || "#3B82F6";
+                    ctx.fill();
+                    
+                    ctx.font = `${nodeRadius * 0.8}px Sans-Serif`;
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillStyle = "#fff";
+                    ctx.fillText(initial, x!, y!);
+                  }
                 }
               } else {
                 ctx.fillStyle = "#3B82F6";
                 ctx.fill();
                 
-                if (name && nodeRadius > 8) {
-                  const initial = name.charAt(0).toUpperCase();
-                  ctx.font = `${nodeRadius * 1.2}px Sans-Serif`;
+                if (name) {
+                  const getInitials = (name: string) => {
+                    return name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .substring(0, 2);
+                  };
+                  
+                  const initial = getInitials(name);
+                  ctx.font = `${Math.min(nodeRadius * 0.8, 12)}px Sans-Serif`;
                   ctx.textAlign = "center";
                   ctx.textBaseline = "middle";
                   ctx.fillStyle = "#fff";
