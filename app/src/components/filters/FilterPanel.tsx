@@ -24,6 +24,7 @@ interface FilterPanelProps {
   allInstitutions: string[];
   allWorkedIn: string[];
   allProfessions: string[];
+  onReset?: () => void;
 }
 
 const FilterPanel = ({
@@ -34,11 +35,13 @@ const FilterPanel = ({
   allInstitutions,
   allWorkedIn,
   allProfessions,
+  onReset,
 }: FilterPanelProps) => {
   const defaultFilters = useRef({ ...filters });
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [draftFilters, setDraftFilters] = useState<Filters>(filters);
   const [includeBC, setIncludeBC] = useState(false);
+  const [includeUnknown, setIncludeUnknown] = useState(filters.includeUnknown || false);
 
   useEffect(() => {
     setDraftFilters(filters);
@@ -60,6 +63,9 @@ const FilterPanel = ({
     const resetValues = { ...defaultFilters.current };
     setDraftFilters(resetValues);
     onFiltersChange(resetValues);
+    if (onReset) {
+      onReset();
+    }
   };
 
   return (

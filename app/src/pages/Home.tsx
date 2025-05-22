@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useFirestore } from "@/hooks/useFirestore";
 import { useGraph } from "@/hooks/useGraph";
 import { Filters, GraphLink, GraphNode, Mathematician } from "@/types";
@@ -10,16 +10,26 @@ import { Loader2 } from "lucide-react";
 import { buildLocationTree, LocationNode } from "@/lib/locationUtils";
 
 const DEFAULT_YEAR_RANGE: [number, number] = [1750, 1800];
+const FILTERS_STORAGE_KEY = "math-historian-filters";
+
+const getDefaultFilters = (): Filters => ({
+  yearRange: DEFAULT_YEAR_RANGE,
+  locations: [],
+  religions: [],
+  institutions: [],
+  worked_in: [],
+  profession: [],
+});
 
 const Home = () => {
-  const [filters, setFilters] = useState<Filters>({
-    yearRange: DEFAULT_YEAR_RANGE,
-    locations: [],
-    religions: [],
-    institutions: [],
-    worked_in: [],
-    profession: [],
+  const [filters, setFilters] = useState<Filters>(() => {
+    const savedFilters = localStorage.getItem(FILTERS_STORAGE_KEY);
+    return savedFilters ? JSON.parse(savedFilters) : getDefaultFilters();
   });
+
+  useEffect(() => {
+    localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(filters));
+  }, [filters]);
 
   const { mathematicians, loading, error } = useFirestore(filters);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
@@ -116,6 +126,10 @@ const Home = () => {
     );
   }
 
+  const handleResetFilters = () => {
+    localStorage.removeItem(FILTERS_STORAGE_KEY);
+  };
+
   return (
     <div className="flex h-[calc(100vh-4rem)] w-screen">
       <FilterPanel
@@ -126,6 +140,7 @@ const Home = () => {
         allInstitutions={allInstitutions}
         allWorkedIn={allWorkedIn}
         allProfessions={allProfessions}
+        onReset={handleResetFilters}
       />
 
       <div className="flex-1">
