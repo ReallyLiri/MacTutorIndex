@@ -64,10 +64,12 @@ const Home = () => {
   const graphData = useGraph(mathematicians, filters);
 
   const handleNodeClick = (node: GraphNode) => {
-    const existingNode = node.id ? graphData.nodes.find(n => 
-      typeof n === 'object' && n.id === node.id
-    ) as GraphNode : null;
-    
+    const existingNode = node.id
+      ? (graphData.nodes.find(
+          (n) => typeof n === "object" && n.id === node.id,
+        ) as GraphNode)
+      : null;
+
     setSelectedNode(existingNode || node);
     setSelectedLink(null);
   };
@@ -128,7 +130,11 @@ const Home = () => {
                   mathematician={selectedNode.data}
                   onClose={handleCloseDetails}
                   onPersonClick={handleNodeClick}
-                  availableNodes={graphData.nodes.filter(node => typeof node !== 'string') as GraphNode[]}
+                  availableNodes={
+                    graphData.nodes.filter(
+                      (node) => typeof node !== "string",
+                    ) as GraphNode[]
+                  }
                 />
               )}
             </div>
@@ -140,10 +146,10 @@ const Home = () => {
                   mathematicians={mathematiciansMap}
                   onClose={handleCloseDetails}
                   onPersonClick={(id) => {
-                    const nodeInGraph = graphData.nodes.find(node => 
-                      typeof node === 'object' && node.id === id
+                    const nodeInGraph = graphData.nodes.find(
+                      (node) => typeof node === "object" && node.id === id,
                     ) as GraphNode;
-                    
+
                     if (nodeInGraph) {
                       handleNodeClick(nodeInGraph);
                     } else if (mathematiciansMap[id]) {
@@ -151,7 +157,7 @@ const Home = () => {
                         id: id,
                         name: mathematiciansMap[id].name,
                         val: 5,
-                        data: mathematiciansMap[id]
+                        data: mathematiciansMap[id],
                       });
                     }
                   }}

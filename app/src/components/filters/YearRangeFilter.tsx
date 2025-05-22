@@ -1,6 +1,6 @@
-import { Slider } from '@/components/ui/slider';
-import { Input } from '@/components/ui/input';
-import { useEffect, useState } from 'react';
+import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { useEffect, useState } from "react";
 
 interface YearRangeFilterProps {
   value: [number, number];
@@ -9,7 +9,12 @@ interface YearRangeFilterProps {
   onChange: (value: [number, number]) => void;
 }
 
-const YearRangeFilter = ({ value, min, max, onChange }: YearRangeFilterProps) => {
+const YearRangeFilter = ({
+  value,
+  min,
+  max,
+  onChange,
+}: YearRangeFilterProps) => {
   const [localValue, setLocalValue] = useState<[number, number]>(value);
   const [minInput, setMinInput] = useState<string>(value[0].toString());
   const [maxInput, setMaxInput] = useState<string>(value[1].toString());

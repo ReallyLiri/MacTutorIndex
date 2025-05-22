@@ -6,7 +6,11 @@ interface InstitutionFilterProps {
   onChange: (value: string[]) => void;
 }
 
-const InstitutionFilter = ({ value, options, onChange }: InstitutionFilterProps) => {
+const InstitutionFilter = ({
+  value,
+  options,
+  onChange,
+}: InstitutionFilterProps) => {
   return (
     <MultiSelectFilter
       value={value}

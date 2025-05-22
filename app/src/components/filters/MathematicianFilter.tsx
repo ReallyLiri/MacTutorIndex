@@ -6,7 +6,11 @@ interface MathematicianFilterProps {
   onChange: (value: string[]) => void;
 }
 
-const MathematicianFilter = ({ value, options, onChange }: MathematicianFilterProps) => {
+const MathematicianFilter = ({
+  value,
+  options,
+  onChange,
+}: MathematicianFilterProps) => {
   return (
     <MultiSelectFilter
       value={value}

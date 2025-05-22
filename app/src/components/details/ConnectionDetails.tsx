@@ -58,7 +58,10 @@ const ConnectionDetails = ({
     <Card className="w-full">
       <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-xl flex items-center gap-2">
-          <span className="h-3 w-3 rounded-full" style={{ backgroundColor: link.color || '#888' }}></span>
+          <span
+            className="h-3 w-3 rounded-full"
+            style={{ backgroundColor: link.color || "#888" }}
+          ></span>
           Connection Details
         </CardTitle>
         <Button
