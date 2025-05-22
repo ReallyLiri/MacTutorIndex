@@ -19,6 +19,7 @@ const getDefaultFilters = (): Filters => ({
   institutions: [],
   worked_in: [],
   profession: [],
+  includeUnknown: false,
 });
 
 const Home = () => {

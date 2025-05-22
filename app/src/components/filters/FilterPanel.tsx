@@ -11,8 +11,6 @@ import WorkedInFilter from "./WorkedInFilter";
 import ProfessionFilter from "./ProfessionFilter";
 import { Checkbox } from "@/components/ui/checkbox.tsx";
 import { LocationNode } from "@/lib/locationUtils";
-
-// ref https://mathshistory.st-andrews.ac.uk/Biographies/chronological/
 const MIN_YEAR = -1680;
 const MAX_YEAR = 1984;
 
@@ -41,10 +39,13 @@ const FilterPanel = ({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [draftFilters, setDraftFilters] = useState<Filters>(filters);
   const [includeBC, setIncludeBC] = useState(false);
-  const [includeUnknown, setIncludeUnknown] = useState(filters.includeUnknown || false);
+  const [includeUnknown, setIncludeUnknown] = useState(
+    filters.includeUnknown || false,
+  );
 
   useEffect(() => {
     setDraftFilters(filters);
+    setIncludeUnknown(filters.includeUnknown || false);
   }, [filters]);
 
   const toggleCollapse = () => {
@@ -127,13 +128,31 @@ const FilterPanel = ({
                   updateDraftFilters({ ...draftFilters, yearRange })
                 }
               />
-              <div className="flex flex-row items-center gap-2 mt-3">
-                <Checkbox
-                  className="w-4 h-4 ml-1"
-                  checked={includeBC}
-                  onCheckedChange={() => setIncludeBC((b) => !b)}
-                />
-                <label className="text-sm text-gray-500">Include BC</label>
+              <div className="flex flext-row gap-2 items-center">
+                <div className="flex flex-row items-center gap-2 mt-3">
+                  <Checkbox
+                    className="w-4 h-4 ml-1"
+                    checked={includeBC}
+                    onCheckedChange={() => setIncludeBC((b) => !b)}
+                  />
+                  <label className="text-sm text-gray-500">Include BC</label>
+                </div>
+                <div className="flex flex-row items-center gap-2 mt-2">
+                  <Checkbox
+                    className="w-4 h-4 ml-1"
+                    checked={includeUnknown}
+                    onCheckedChange={(checked) => {
+                      setIncludeUnknown(!!checked);
+                      updateDraftFilters({
+                        ...draftFilters,
+                        includeUnknown: !!checked,
+                      });
+                    }}
+                  />
+                  <label className="text-sm text-gray-500">
+                    Include unknown dates
+                  </label>
+                </div>
               </div>
             </div>
 

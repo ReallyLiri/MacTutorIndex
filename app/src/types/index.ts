@@ -65,4 +65,5 @@ export type Filters = {
   institutions: string[];
   worked_in: string[];
   profession: string[];
+  includeUnknown?: boolean;
 };
