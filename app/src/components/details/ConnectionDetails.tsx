@@ -1,18 +1,22 @@
-import { X } from "lucide-react";
+import { Eye, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GraphLink, Mathematician } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { createCitationUrl, getInitials } from "@/lib/personUtils";
 
 interface ConnectionDetailsProps {
   link: GraphLink | null;
   mathematicians: Record<string, Mathematician>;
   onClose: () => void;
+  onPersonClick?: (id: string) => void;
 }
 
 const ConnectionDetails = ({
   link,
   mathematicians,
   onClose,
+  onPersonClick,
 }: ConnectionDetailsProps) => {
   if (!link) return null;
 
@@ -23,12 +27,6 @@ const ConnectionDetails = ({
   const targetMathematician = mathematicians[targetId];
 
   if (!sourceMathematician || !targetMathematician) return null;
-
-  const createCitationUrl = (name: string, text: string) => {
-    const baseUrl = "https://mathshistory.st-andrews.ac.uk/Biographies/";
-    const formattedName = name.split(" ").pop();
-    return `${baseUrl}${formattedName}/#:~:text=${encodeURIComponent(text)}`;
-  };
 
   const getConnectionExcerpts = () => {
     const sourceExcerpts: string[] = [];
@@ -70,15 +68,59 @@ const ConnectionDetails = ({
       </CardHeader>
       <CardContent className="p-4">
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex-1 text-center px-2">
-              <h3 className="font-semibold">{sourceMathematician.name}</h3>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex-1 flex flex-col items-center px-2">
+              <Avatar className="h-16 w-16 mb-2">
+                <AvatarImage
+                  src={sourceMathematician.picture}
+                  className="object-cover w-full h-full"
+                />
+                <AvatarFallback>
+                  {getInitials(sourceMathematician.name)}
+                </AvatarFallback>
+              </Avatar>
+              <h3 className="font-semibold text-center">
+                {sourceMathematician.name}
+              </h3>
+              {onPersonClick && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mt-1"
+                  onClick={() => onPersonClick(sourceId)}
+                >
+                  <Eye className="h-3 w-3" />
+                </Button>
+              )}
             </div>
-            <div className="text-sm px-4 py-1 bg-secondary rounded-full">
+
+            <div className="text-sm px-4 py-1 bg-secondary rounded-full self-start mt-8">
               {link.type}
             </div>
-            <div className="flex-1 text-center px-2">
-              <h3 className="font-semibold">{targetMathematician.name}</h3>
+
+            <div className="flex-1 flex flex-col items-center px-2">
+              <Avatar className="h-16 w-16 mb-2">
+                <AvatarImage
+                  src={targetMathematician.picture}
+                  className="object-cover w-full h-full"
+                />
+                <AvatarFallback>
+                  {getInitials(targetMathematician.name)}
+                </AvatarFallback>
+              </Avatar>
+              <h3 className="font-semibold text-center">
+                {targetMathematician.name}
+              </h3>
+              {onPersonClick && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mt-1"
+                  onClick={() => onPersonClick(targetId)}
+                >
+                  <Eye className="h-3 w-3" />
+                </Button>
+              )}
             </div>
           </div>
 

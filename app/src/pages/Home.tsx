@@ -136,6 +136,22 @@ const Home = () => {
                   link={selectedLink}
                   mathematicians={mathematiciansMap}
                   onClose={handleCloseDetails}
+                  onPersonClick={(id) => {
+                    const nodeInGraph = graphData.nodes.find(node => 
+                      typeof node === 'object' && node.id === id
+                    ) as GraphNode;
+                    
+                    if (nodeInGraph) {
+                      handleNodeClick(nodeInGraph);
+                    } else if (mathematiciansMap[id]) {
+                      handleNodeClick({
+                        id: id,
+                        name: mathematiciansMap[id].name,
+                        val: 5,
+                        data: mathematiciansMap[id]
+                      });
+                    }
+                  }}
                 />
               )}
             </div>

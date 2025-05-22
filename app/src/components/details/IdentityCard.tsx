@@ -9,6 +9,7 @@ import { GraphNode, Mathematician } from "@/types";
 import { useEffect, useState } from "react";
 import MultiSelectFilter from "@/components/filters/MultiSelectFilter";
 import { getMathematicianById } from "@/lib/firebase";
+import { getInitials, formatYear, formatPlace } from "@/lib/personUtils";
 
 interface IdentityCardProps {
   mathematician: Mathematician;
@@ -46,14 +47,6 @@ const ConnectionPerson = ({
     fetchPerson();
   }, [personKey]);
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
-
   const handleClick = () => {
     if (onPersonClick) {
       if (correspondingNode) {
@@ -63,7 +56,7 @@ const ConnectionPerson = ({
           id: personKey,
           name: personData.name,
           val: 5,
-          data: personData
+          data: personData,
         } as GraphNode);
       }
     }
@@ -101,9 +94,11 @@ const ConnectionPerson = ({
           <Button
             variant="ghost"
             size="sm"
-            className={`p-0 h-6 w-6 ${correspondingNode ? '' : 'text-muted-foreground'}`}
+            className={`p-0 h-6 w-6 ${correspondingNode ? "" : "text-muted-foreground"}`}
             onClick={handleClick}
-            title={correspondingNode ? "View details" : "View details (not in graph)"}
+            title={
+              correspondingNode ? "View details" : "View details (not in graph)"
+            }
           >
             <Eye className="h-4 w-4" />
             <span className="sr-only">View details</span>
@@ -151,49 +146,6 @@ const IdentityCard = ({
         )
         .sort((a, b) => a.key?.localeCompare(b.key))
     : [];
-
-  const formatYear = (year: number | null, approx: boolean) => {
-    if (year === null) return "Unknown";
-    return `${approx ? "c. " : ""}${year}`;
-  };
-
-  const formatPlace = (place: string, link?: string) => {
-    if (!place) return "Unknown";
-    if (link)
-      return (
-        <a
-          href={link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-500 hover:underline"
-        >
-          {place}
-        </a>
-      );
-    return place;
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
-
-  const formatSummaryText = (text: string) => {
-    if (!text) return "";
-
-    const parts = text.split(/(_[^_]+_)/g);
-
-    return parts.map((part, index) => {
-      if (part.match(/^_[^_]+_$/)) {
-        const italicText = part.slice(1, -1);
-        return <i key={index}>{italicText}</i>;
-      }
-      return part;
-    });
-  };
 
   return (
     <Card className="w-full max-w-md h-full max-h-[90vh] flex flex-col overflow-hidden">
@@ -246,7 +198,13 @@ const IdentityCard = ({
               <div className="space-y-4">
                 <div>
                   <p className="text-sm leading-relaxed">
-                    {formatSummaryText(summary)}
+                    {summary.split(/(_[^_]+_)/g).map((part, index) => {
+                      if (part.match(/^_[^_]+_$/)) {
+                        const italicText = part.slice(1, -1);
+                        return <i key={index}>{italicText}</i>;
+                      }
+                      return part;
+                    })}
                   </p>
                   <div className="mt-4">
                     <a
@@ -268,7 +226,18 @@ const IdentityCard = ({
                   <h3 className="text-sm font-semibold mb-1">Birth</h3>
                   <p className="text-sm">
                     {formatYear(born.year, born.approx)} in{" "}
-                    {formatPlace(born.place, born.link)}
+                    {born.link ? (
+                      <a
+                        href={born.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:underline"
+                      >
+                        {born.place}
+                      </a>
+                    ) : (
+                      formatPlace(born.place)
+                    )}
                   </p>
                 </div>
 
@@ -278,7 +247,18 @@ const IdentityCard = ({
                   <h3 className="text-sm font-semibold mb-1">Death</h3>
                   <p className="text-sm">
                     {formatYear(died.year, died.approx)} in{" "}
-                    {formatPlace(died.place, died.link)}
+                    {died.link ? (
+                      <a
+                        href={died.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:underline"
+                      >
+                        {died.place}
+                      </a>
+                    ) : (
+                      formatPlace(died.place)
+                    )}
                   </p>
                 </div>
 
