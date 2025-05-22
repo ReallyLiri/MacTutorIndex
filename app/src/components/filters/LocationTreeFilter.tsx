@@ -3,11 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  ChevronDown,
-  ChevronRight,
-  ChevronUp,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, ChevronUp } from "lucide-react";
 import { normalizeText } from "@/lib/textUtils";
 import {
   getAllSelectedPaths,
