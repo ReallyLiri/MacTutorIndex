@@ -87,7 +87,9 @@ const ConnectionPerson = ({
           className="h-2 w-2 rounded-full"
           style={{ backgroundColor: connectionColor || "#888" }}
         ></span>
-        {connectionType}
+        {connectionType === "collaborator with"
+          ? "Collaborated with"
+          : connectionType}
       </h3>
       <div className="flex items-center gap-2">
         {loading ? (
