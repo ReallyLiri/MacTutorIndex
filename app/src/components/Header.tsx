@@ -43,12 +43,11 @@ const Header = () => {
               <div className="flex items-center gap-2 my-4">
                 <ConstructionIcon className="w-6 h-6 cursor-pointer text-orange-300" />
                 <span className="text-xs text-gray-300">
-                  This project is still in its early stages and
-                  <br />
-                  the LLM output has not yet been fully verified and refined.
+                  This project is still in its early stages and the LLM output
+                  has not yet been fully verified and refined.
                 </span>
               </div>
-              <div className="text-sm">
+              <div className="text-xs text-gray-300">
                 The data is based on the{" "}
                 <a
                   href="https://mathshistory.st-andrews.ac.uk/"
