@@ -279,7 +279,7 @@ const Graph = ({
       <Button
         variant="outline"
         size="sm"
-        className="absolute top-20 right-4 z-10 h-[40px]"
+        className="absolute top-[100px] right-4 z-10 h-[40px]"
         onClick={resetView}
       >
         <RefreshCw className="h-4 w-4 mr-2" />

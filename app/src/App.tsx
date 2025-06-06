@@ -10,7 +10,7 @@ import Home from "./pages/Home";
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="math-historian-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="math-historian-theme">
       <Router>
         <div className="min-h-screen bg-background flex flex-col">
           <Header />
