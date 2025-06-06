@@ -41,13 +41,13 @@ const Header = () => {
               to extract essential details from each biography and map the
               connections between individuals as an interactive graph.
               <div className="flex items-center gap-2 my-4">
-                <ConstructionIcon className="w-6 h-6 cursor-pointer text-orange-300" />
-                <span className="text-xs text-gray-300">
+                <ConstructionIcon className="w-12 h-12 cursor-pointer text-orange-300" />
+                <span className=" text-gray-300">
                   This project is still in its early stages and the LLM output
                   has not yet been fully verified and refined.
                 </span>
               </div>
-              <div className="text-xs text-gray-300">
+              <div className="text-sm text-gray-300">
                 The data is based on the{" "}
                 <a
                   href="https://mathshistory.st-andrews.ac.uk/"
@@ -73,8 +73,8 @@ const Header = () => {
           </DialogContent>
         </Dialog>
         <Separator orientation="vertical" className="h-8" />
-        <ConstructionIcon className="w-6 h-6 cursor-pointer text-orange-300 -mr-4" />
-        <span className="text-xs text-gray-300">
+        <ConstructionIcon className="w-8 h-8 cursor-pointer text-orange-300 -mr-4" />
+        <span className=" text-gray-300">
           This project is still in its early stages and
           <br />
           the LLM output has not yet been fully verified and refined.
