@@ -1,4 +1,4 @@
-# MacTutor Index Project
+# MacTutor Index Graph Project
 
 Tools to crawl, parse, and index the MacTutor History of Mathematics Archive.
 
