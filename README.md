@@ -64,3 +64,7 @@ Required environment variables for Firebase:
 - `FIREBASE_CLIENT_EMAIL`
 - `FIREBASE_CLIENT_ID`
 - `FIREBASE_CLIENT_X509_CERT_URL`
+
+## License
+
+The data is based on the MacTutor Index and is licensed under CC BY-SA 4.0.
