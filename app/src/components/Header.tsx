@@ -1,10 +1,6 @@
-import {
-  ArrowUpLeftFromSquareIcon,
-  ConstructionIcon,
-  XIcon
-} from "lucide-react";
-import {Separator} from "./ui/separator";
-import {Button} from "./ui/button";
+import { ConstructionIcon, XIcon } from "lucide-react";
+import { Separator } from "./ui/separator";
+import { Button } from "./ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,29 +8,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
+import { ExternalLinkIcon } from "@radix-ui/react-icons";
 
 const Header = () => {
   return (
     <header className="bg-background/80 backdrop-blur-sm border-b sticky top-0 z-40">
-      <div className="container px-6 h-16 flex items-center justify-between w-fit gap-8">
-        <Button variant="ghost" className="items-left">
-          <ArrowUpLeftFromSquareIcon/>
-          <a
-            className="mr-2"
-            href="https://elements-resource-box.netlify.app/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Euclid's Elements
-            <br/>
-            Resource Box
-          </a>
-        </Button>
-        <Separator orientation="vertical" className="h-8"/>
+      <div className="container px-6 h-18 flex items-center justify-between w-fit gap-8">
         <div className="flex items-center">
           <h1 className="text-xl font-bold">MacTutor Index Graph</h1>
         </div>
-        <Separator orientation="vertical" className="h-8"/>
+        <Separator orientation="vertical" className="h-8" />
         <Dialog>
           <DialogTrigger asChild>
             <Button variant="ghost">About</Button>
@@ -45,7 +28,7 @@ const Header = () => {
                 About MacTutor Index Graph
                 <DialogTrigger asChild>
                   <Button variant="ghost">
-                    <XIcon/>
+                    <XIcon />
                   </Button>
                 </DialogTrigger>
               </DialogTitle>
@@ -57,14 +40,16 @@ const Header = () => {
               biographies of over 3,000 mathematicians. The project uses an LLM
               to extract essential details from each biography and map the
               connections between individuals as an interactive graph.
-              <div className="flex items-center">
-                <ConstructionIcon color={"orange"} className="w-20 h-20 cursor-pointer"/>
-                This project is still in its early stages and the LLM output has not yet been fully verified and
-                refined.
+              <div className="flex items-center gap-2 my-4">
+                <ConstructionIcon className="w-6 h-6 cursor-pointer text-orange-300" />
+                <span className="text-xs text-gray-300">
+                  This project is still in its early stages and
+                  <br />
+                  the LLM output has not yet been fully verified and refined.
+                </span>
               </div>
               <div className="text-sm">
-                The
-                data is based on the{" "}
+                The data is based on the{" "}
                 <a
                   href="https://mathshistory.st-andrews.ac.uk/"
                   target="_blank"
@@ -82,18 +67,34 @@ const Header = () => {
                 >
                   CC BY-SA 4.0
                 </a>
-                . The project is created and maintained by Mia Joskowicz and Liri Sokol, 2025.
+                . The project is created and maintained by Mia Joskowicz and
+                Liri Sokol, 2025.
               </div>
             </div>
           </DialogContent>
         </Dialog>
-        <Separator orientation="vertical" className="h-8"/>
-        <ConstructionIcon color={"orange"} className="w-6 h-6 cursor-pointer"/>
-        <span>
-            This project is still in its early stages and
-            <br/>
-             the LLM output has not yet been fully verified and refined.
-          </span>
+        <Separator orientation="vertical" className="h-8" />
+        <ConstructionIcon className="w-6 h-6 cursor-pointer text-orange-300 -mr-4" />
+        <span className="text-xs text-gray-300">
+          This project is still in its early stages and
+          <br />
+          the LLM output has not yet been fully verified and refined.
+        </span>
+
+        <Separator orientation="vertical" className="h-8" />
+        <Button variant="ghost" className="text-left h-auto my-4">
+          <a
+            className="mr-2"
+            href="https://elements-resource-box.netlify.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Euclid's Elements
+            <br />
+            Resource Box
+          </a>
+          <ExternalLinkIcon />
+        </Button>
       </div>
     </header>
   );
