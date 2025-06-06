@@ -84,7 +84,7 @@ const Header = () => {
         <Separator orientation="vertical" className="h-8" />
         <Button variant="ghost" className="text-left h-auto my-4">
           <a
-            className="mr-2"
+            className="mr-4"
             href="https://elements-resource-box.netlify.app/"
             target="_blank"
             rel="noopener noreferrer"
