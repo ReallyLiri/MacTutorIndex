@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Mathematician, GraphData } from "../types";
+import { GraphData, Mathematician } from "../types";
 
 export const useGraph = (mathematicians: Mathematician[]) => {
   return useMemo(() => {
@@ -46,11 +46,11 @@ const getNodeColor = (_mathematician: Mathematician): string => {
   return "#3B82F6";
 };
 
-const getLinkColor = (connectionType: string): string => {
+export const getLinkColor = (connectionType: string): string => {
   switch (connectionType.toLowerCase()) {
     case "influenced by":
       return "#9333EA";
-    case "collaborator with":
+    case "collaborated with":
       return "#14B8A6";
     case "student of":
     case "studied":
