@@ -8,7 +8,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { ExternalLinkIcon } from "@radix-ui/react-icons";
 
 const Header = () => {
   return (
