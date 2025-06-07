@@ -8,7 +8,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { ExternalLinkIcon } from "@radix-ui/react-icons";
 
 const Header = () => {
   return (
@@ -79,21 +78,6 @@ const Header = () => {
           <br />
           the LLM output has not yet been fully verified and refined.
         </span>
-
-        <Separator orientation="vertical" className="h-8" />
-        <Button variant="ghost" className="text-left h-auto my-4">
-          <a
-            className="mr-4"
-            href="https://elements-resource-box.netlify.app/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Euclid's Elements
-            <br />
-            Resource Box
-          </a>
-          <ExternalLinkIcon />
-        </Button>
       </div>
     </header>
   );
