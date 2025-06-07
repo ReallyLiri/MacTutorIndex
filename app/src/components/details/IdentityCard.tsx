@@ -10,21 +10,7 @@ import { useEffect, useState } from "react";
 import MultiSelectFilter from "@/components/filters/MultiSelectFilter";
 import { useFirestore } from "@/hooks/useFirestore";
 import { getInitials, formatYear, formatPlace } from "@/lib/personUtils";
-
-const getConnectionColor = (connectionType: string): string => {
-  switch (connectionType.toLowerCase()) {
-    case "influenced by":
-      return "#9333EA";
-    case "collaborator with":
-      return "#14B8A6";
-    case "teacher of":
-      return "#F97316";
-    case "student of":
-      return "#22C55E";
-    default:
-      return "#94A3B8";
-  }
-};
+import { getLinkColor } from "@/hooks/useGraph.ts";
 
 interface IdentityCardProps {
   mathematician: Mathematician;
@@ -87,9 +73,7 @@ const ConnectionPerson = ({
           className="h-2 w-2 rounded-full"
           style={{ backgroundColor: connectionColor || "#888" }}
         ></span>
-        {connectionType === "collaborator with"
-          ? "Collaborated with"
-          : connectionType}
+        {connectionType}
       </h3>
       <div className="flex items-center gap-2">
         {loading ? (
@@ -154,7 +138,7 @@ const IdentityCard = ({
   } = mathematician;
 
   const connectionTypes = connections
-    ? [...new Set(connections.map((conn) => conn.connection_type))]
+    ? [...new Set(connections.map((conn) => conn.connection_type).sort())]
     : [];
 
   const [selectedConnectionTypes, setSelectedConnectionTypes] = useState<
@@ -166,7 +150,10 @@ const IdentityCard = ({
         .filter(
           (conn) =>
             selectedConnectionTypes.length === 0 ||
-            selectedConnectionTypes.includes(conn.connection_type),
+            selectedConnectionTypes.some(
+              (selected) =>
+                selected.toLowerCase() === conn.connection_type.toLowerCase(),
+            ),
         )
         .sort((a, b) => a.key?.localeCompare(b.key))
     : [];
@@ -196,7 +183,11 @@ const IdentityCard = ({
 
       <ScrollArea className="flex-1 overflow-y-auto">
         <CardContent className="p-4 pt-0">
-          <Tabs defaultValue="summary" className="w-full">
+          <Tabs
+            key={mathematician.id}
+            defaultValue="summary"
+            className="w-full"
+          >
             <TabsList className="flex mb-4 bg-muted/50 p-1 rounded-lg gap-2">
               <TabsTrigger
                 value="summary"
@@ -400,7 +391,7 @@ const IdentityCard = ({
                               (node) => node.id === connection.key,
                             )}
                             onPersonClick={onPersonClick}
-                            connectionColor={getConnectionColor(
+                            connectionColor={getLinkColor(
                               connection.connection_type,
                             )}
                           />

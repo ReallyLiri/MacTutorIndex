@@ -173,6 +173,16 @@ export const useFirestore = (filters: Filters | null) => {
           }
         }
 
+        mathematiciansData.forEach((mathematician) => {
+          mathematician.connections.forEach((conn) => {
+            if (
+              conn.connection_type.toLowerCase().trim() === "collaborator with"
+            ) {
+              conn.connection_type = "collaborated with";
+            }
+          });
+        });
+
         setMathematicians(mathematiciansData);
       } catch (err) {
         console.error(err);

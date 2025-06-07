@@ -101,9 +101,7 @@ const ConnectionDetails = ({
             </div>
 
             <div className="text-sm px-4 py-1 bg-secondary rounded-full self-start mt-8">
-              {link.type === "collaborator with"
-                ? "Collaborated with"
-                : link.type}
+              {link.type}
             </div>
 
             <div className="flex-1 flex flex-col items-center px-2">
