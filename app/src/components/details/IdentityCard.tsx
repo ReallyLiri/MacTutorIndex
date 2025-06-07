@@ -166,7 +166,9 @@ const IdentityCard = ({
         .filter(
           (conn) =>
             selectedConnectionTypes.length === 0 ||
-            selectedConnectionTypes.includes(conn.connection_type),
+            selectedConnectionTypes.some(selected => 
+              selected.toLowerCase() === conn.connection_type.toLowerCase()
+            ),
         )
         .sort((a, b) => a.key?.localeCompare(b.key))
     : [];
